@@ -126,6 +126,27 @@ export interface TaskResult {
   ErrorMessage?: string;
 }
 
+export type CollectionTypeOption =
+  | 'movies'
+  | 'tvshows'
+  | 'music'
+  | 'musicvideos'
+  | 'homevideos'
+  | 'boxsets'
+  | 'books'
+  | 'mixed';
+
+/** A library as configured on the server ("virtual folder"). */
+export interface VirtualFolderInfo {
+  Name: string;
+  Locations: string[];
+  CollectionType?: CollectionTypeOption;
+  /** Id of the library's folder item — used for per-library refresh. */
+  ItemId?: string;
+  RefreshProgress?: number;
+  RefreshStatus?: string;
+}
+
 export type LogSeverity = 'Trace' | 'Debug' | 'Information' | 'Warn' | 'Error' | 'Fatal';
 
 export interface ActivityLogEntry {

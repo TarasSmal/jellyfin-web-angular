@@ -11,3 +11,4 @@ export * from './sessions-api';
 export * from './tasks-api';
 export * from './activity-log-api';
 export * from './admin-users-api';
+export * from './library-admin-api';

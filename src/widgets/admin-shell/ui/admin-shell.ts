@@ -51,6 +51,7 @@ export class AdminShell {
     { label: 'Overview', path: '/admin' },
     { label: 'Activity', path: '/admin/activity' },
     { label: 'Users', path: '/admin/users' },
+    { label: 'Libraries', path: '/admin/libraries' },
   ];
-  protected readonly upcoming = ['Libraries', 'Tasks'];
+  protected readonly upcoming = ['Tasks'];
 }

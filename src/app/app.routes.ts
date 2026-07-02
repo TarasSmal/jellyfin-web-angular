@@ -57,6 +57,11 @@ export const routes: Routes = [
             path: 'users',
             loadComponent: () => import('@pages/admin-users').then((m) => m.AdminUsersPage),
           },
+          {
+            path: 'libraries',
+            loadComponent: () =>
+              import('@pages/admin-libraries').then((m) => m.AdminLibrariesPage),
+          },
         ],
       },
     ],
