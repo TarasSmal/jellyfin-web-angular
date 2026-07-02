@@ -10,6 +10,12 @@ export function usersRequest(config: ApiConfig): HttpResourceRequest | undefined
   return { url: config.url('/Users') };
 }
 
+/** One account with its full policy. Admin-only endpoint. */
+export function userRequest(config: ApiConfig, userId: string): HttpResourceRequest | undefined {
+  if (!config.isAuthenticated() || !userId) return undefined;
+  return { url: config.url(`/Users/${userId}`) };
+}
+
 /** Admin mutations on user accounts. */
 @Service()
 export class AdminUsersApi {

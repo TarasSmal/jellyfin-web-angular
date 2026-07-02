@@ -58,6 +58,10 @@ export const routes: Routes = [
             loadComponent: () => import('@pages/admin-users').then((m) => m.AdminUsersPage),
           },
           {
+            path: 'users/:id',
+            loadComponent: () => import('@pages/admin-user').then((m) => m.AdminUserPage),
+          },
+          {
             path: 'libraries',
             loadComponent: () =>
               import('@pages/admin-libraries').then((m) => m.AdminLibrariesPage),

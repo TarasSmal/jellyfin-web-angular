@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
 import { FormField, form, required } from '@angular/forms/signals';
 import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { AdminUsersApi, ApiConfig, UserDto, usersRequest } from '@shared/api';
@@ -10,7 +11,7 @@ import { ToastService } from '@shared/ui/toast';
 
 @Component({
   selector: 'app-admin-users-page',
-  imports: [DatePipe, FormField, BrnDialogImports],
+  imports: [DatePipe, RouterLink, FormField, BrnDialogImports],
   template: `
     <main>
       <div class="flex flex-wrap items-center justify-between gap-4">
@@ -91,7 +92,12 @@ import { ToastService } from '@shared/ui/toast';
               @for (user of list; track user.Id) {
                 <tr class="border-b border-border/60 last:border-b-0">
                   <td class="whitespace-nowrap px-4 py-3 font-medium">
-                    {{ user.Name }}
+                    <a
+                      [routerLink]="['/admin/users', user.Id]"
+                      class="transition-colors hover:text-accent"
+                    >
+                      {{ user.Name }}
+                    </a>
                     @if (isSelf(user)) {
                       <span class="ml-1 text-xs text-text-faint">(you)</span>
                     }

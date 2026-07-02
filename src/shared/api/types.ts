@@ -20,7 +20,32 @@ export interface UserPolicy {
   IsAdministrator?: boolean;
   IsDisabled?: boolean;
   IsHidden?: boolean;
+  EnableRemoteAccess?: boolean;
+  EnableAllFolders?: boolean;
+  /** Library folder ids (VirtualFolderInfo.ItemId) when EnableAllFolders is off. */
+  EnabledFolders?: string[];
+  EnableMediaPlayback?: boolean;
+  EnableAudioPlaybackTranscoding?: boolean;
+  EnableVideoPlaybackTranscoding?: boolean;
+  EnablePlaybackRemuxing?: boolean;
+  EnableContentDeletion?: boolean;
+  EnableContentDownloading?: boolean;
+  EnableCollectionManagement?: boolean;
+  EnableSubtitleManagement?: boolean;
+  EnableSharedDeviceControl?: boolean;
+  EnableRemoteControlOfOtherUsers?: boolean;
+  EnableLiveTvAccess?: boolean;
+  EnableLiveTvManagement?: boolean;
+  /** Rating threshold from /Localization/ParentalRatings; null = no limit. */
+  MaxParentalRating?: number | null;
+  /** 0 = unlimited. */
+  MaxActiveSessions?: number;
   [key: string]: unknown;
+}
+
+export interface ParentalRating {
+  Name: string;
+  Value?: number | null;
 }
 
 export interface UserDto {
