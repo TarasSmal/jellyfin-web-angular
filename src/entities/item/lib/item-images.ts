@@ -31,6 +31,12 @@ export function itemBackdropUrl(config: ApiConfig, item: BaseItemDto, width = 19
   return null;
 }
 
+/** Cast headshot. */
+export function personImageUrl(config: ApiConfig, person: { Id: string; PrimaryImageTag?: string }, height = 300): string | null {
+  if (!person.PrimaryImageTag) return null;
+  return imageUrl(config, person.Id, 'Primary', person.PrimaryImageTag, `fillHeight=${height}`);
+}
+
 /** Wide card image for Continue Watching / Next Up: own thumb, else episode still, else backdrop. */
 export function itemThumbUrl(config: ApiConfig, item: BaseItemDto, width = 640): string | null {
   const thumbTag = item.ImageTags?.['Thumb'];

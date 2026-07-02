@@ -45,11 +45,31 @@ export function nextUpRequest(config: ApiConfig, limit = 12): Req {
   };
 }
 
-/** One item with full detail fields. */
+/** One item with full detail fields (cast, genres, overview). */
 export function itemRequest(config: ApiConfig, itemId: string): Req {
   const userId = config.userId();
   if (!userId) return undefined;
-  return { url: config.url(`/Items/${itemId}`), params: { userId } };
+  return {
+    url: config.url(`/Items/${itemId}`),
+    params: { userId, fields: 'People,Genres,Overview' },
+  };
+}
+
+/** Seasons of a series. */
+export function seasonsRequest(config: ApiConfig, seriesId: string): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return { url: config.url(`/Shows/${seriesId}/Seasons`), params: { userId } };
+}
+
+/** Episodes of one season. */
+export function episodesRequest(config: ApiConfig, seriesId: string, seasonId: string): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return {
+    url: config.url(`/Shows/${seriesId}/Episodes`),
+    params: { userId, seasonId, fields: `${ITEM_FIELDS}`, enableImageTypes: IMAGE_TYPES },
+  };
 }
 
 export interface ItemsQuery {

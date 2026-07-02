@@ -1,0 +1,186 @@
+import { Component, computed, inject, input, linkedSignal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
+import {
+  ApiConfig,
+  BaseItemDto,
+  ItemsResult,
+  episodesRequest,
+  itemRequest,
+  seasonsRequest,
+} from '@shared/api';
+import { itemBackdropUrl, itemPosterUrl, personImageUrl } from '@entities/item';
+import { FavoriteButton } from '@features/toggle-favorite';
+import { WatchedButton } from '@features/mark-watched';
+import { EpisodeList } from '@widgets/episode-list';
+import { formatRuntime } from '@shared/lib/ticks';
+
+@Component({
+  selector: 'app-item-page',
+  imports: [RouterLink, FavoriteButton, WatchedButton, EpisodeList],
+  template: `
+    @if (item.value(); as it) {
+      <main class="pb-16">
+        <!-- Backdrop hero -->
+        <section class="relative aspect-[16/7] max-h-[60dvh] min-h-80 w-full overflow-hidden">
+          @if (backdrop(); as url) {
+            <img [src]="url" [alt]="it.Name" class="absolute inset-0 h-full w-full object-cover object-top" />
+          }
+          <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
+        </section>
+
+        <div class="relative z-10 -mt-24 px-6 md:px-12">
+          <div class="flex gap-8">
+            @if (poster(); as url) {
+              <img
+                [src]="url"
+                [alt]="it.Name"
+                class="hidden w-44 shrink-0 self-start rounded-xl shadow-2xl md:block"
+              />
+            }
+            <div class="min-w-0 flex-1 space-y-4">
+              <h1 class="text-3xl font-bold tracking-tight md:text-4xl">{{ it.Name }}</h1>
+
+              <p class="flex flex-wrap items-center gap-3 text-sm text-text-muted">
+                @if (it.ProductionYear; as year) {
+                  <span>{{ year }}</span>
+                }
+                @if (it.RunTimeTicks; as ticks) {
+                  <span>{{ runtime(ticks) }}</span>
+                }
+                @if (it.OfficialRating; as rating) {
+                  <span class="rounded border border-border px-1.5 py-0.5 text-xs">{{ rating }}</span>
+                }
+                @if (it.CommunityRating; as stars) {
+                  <span class="text-amber-400">★ {{ stars.toFixed(1) }}</span>
+                }
+              </p>
+
+              @if (it.Genres?.length) {
+                <p class="flex flex-wrap gap-2">
+                  @for (genre of it.Genres; track genre) {
+                    <span class="rounded-full bg-surface px-3 py-1 text-xs text-text-muted">{{ genre }}</span>
+                  }
+                </p>
+              }
+
+              <div class="flex items-center gap-3">
+                @if (it.Type !== 'Series') {
+                  <a
+                    [routerLink]="['/player', it.Id]"
+                    class="flex items-center gap-2 rounded-lg bg-text px-6 py-2.5 font-semibold text-bg transition-opacity hover:opacity-80"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    {{ resumeLabel() }}
+                  </a>
+                }
+                <app-favorite-button [item]="it" />
+                <app-watched-button [item]="it" />
+              </div>
+
+              @if (it.Overview; as overview) {
+                <p class="max-w-3xl text-sm leading-relaxed text-text-muted md:text-base">{{ overview }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Cast -->
+          @if (cast().length) {
+            <section class="mt-10 space-y-3">
+              <h2 class="text-lg font-semibold">Cast</h2>
+              <div class="flex gap-4 overflow-x-auto pb-2">
+                @for (person of cast(); track person.Id) {
+                  <div class="w-24 shrink-0 text-center">
+                    <div class="mx-auto h-24 w-24 overflow-hidden rounded-full bg-surface">
+                      @if (personImage(person); as url) {
+                        <img [src]="url" [alt]="person.Name" loading="lazy" class="h-full w-full object-cover" />
+                      }
+                    </div>
+                    <p class="mt-2 truncate text-xs font-medium">{{ person.Name }}</p>
+                    @if (person.Role; as role) {
+                      <p class="truncate text-xs text-text-faint">{{ role }}</p>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Seasons + episodes -->
+          @if (it.Type === 'Series') {
+            <section class="mt-10 space-y-4">
+              <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold">Episodes</h2>
+                <select
+                  class="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                  [value]="selectedSeasonId() ?? ''"
+                  (change)="onSeason($event)"
+                >
+                  @for (season of seasons.value()?.Items; track season.Id) {
+                    <option [value]="season.Id">{{ season.Name }}</option>
+                  }
+                </select>
+              </div>
+              <app-episode-list [episodes]="episodes.value()?.Items" [loading]="episodes.isLoading()" />
+            </section>
+          }
+        </div>
+      </main>
+    } @else {
+      <main class="min-h-dvh">
+        <div class="aspect-[16/7] max-h-[60dvh] min-h-80 w-full animate-pulse bg-surface"></div>
+      </main>
+    }
+  `,
+})
+export class ItemPage {
+  private readonly config = inject(ApiConfig);
+
+  /** Route param via withComponentInputBinding. */
+  readonly id = input.required<string>();
+
+  protected readonly item = httpResource<BaseItemDto>(() => itemRequest(this.config, this.id()));
+
+  protected readonly seasons = httpResource<ItemsResult>(() => {
+    const it = this.item.value();
+    return it?.Type === 'Series' ? seasonsRequest(this.config, it.Id) : undefined;
+  });
+
+  protected readonly selectedSeasonId = linkedSignal(() => this.seasons.value()?.Items[0]?.Id);
+
+  protected readonly episodes = httpResource<ItemsResult>(() => {
+    const it = this.item.value();
+    const seasonId = this.selectedSeasonId();
+    return it?.Type === 'Series' && seasonId
+      ? episodesRequest(this.config, it.Id, seasonId)
+      : undefined;
+  });
+
+  protected readonly backdrop = computed(() => {
+    const it = this.item.value();
+    return it ? itemBackdropUrl(this.config, it) : null;
+  });
+  protected readonly poster = computed(() => {
+    const it = this.item.value();
+    return it ? itemPosterUrl(this.config, it, 660) : null;
+  });
+  protected readonly cast = computed(
+    () => this.item.value()?.People?.filter((p) => p.Type === 'Actor').slice(0, 20) ?? [],
+  );
+  protected readonly resumeLabel = computed(() => {
+    const position = this.item.value()?.UserData?.PlaybackPositionTicks ?? 0;
+    return position > 0 ? 'Resume' : 'Play';
+  });
+
+  protected onSeason(event: Event): void {
+    this.selectedSeasonId.set((event.target as HTMLSelectElement).value);
+  }
+
+  protected runtime(ticks: number): string {
+    return formatRuntime(ticks);
+  }
+
+  protected personImage(person: { Id: string; PrimaryImageTag?: string }): string | null {
+    return personImageUrl(this.config, person);
+  }
+}

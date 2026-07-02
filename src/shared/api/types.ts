@@ -36,8 +36,17 @@ export interface UserItemData {
   UnplayedItemCount?: number;
 }
 
+export interface PersonDto {
+  Id: string;
+  Name: string;
+  Role?: string;
+  Type?: string;
+  PrimaryImageTag?: string;
+}
+
 /** Jellyfin models every media object with one DTO; Type discriminates. */
 export interface BaseItemDto {
+  People?: PersonDto[];
   Id: string;
   Name: string;
   Type: 'Movie' | 'Series' | 'Season' | 'Episode' | 'CollectionFolder' | (string & {});

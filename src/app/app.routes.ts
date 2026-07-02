@@ -24,6 +24,10 @@ export const routes: Routes = [
         path: 'library/:id',
         loadComponent: () => import('@pages/library').then((m) => m.LibraryPage),
       },
+      {
+        path: 'item/:id',
+        loadComponent: () => import('@pages/item').then((m) => m.ItemPage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
