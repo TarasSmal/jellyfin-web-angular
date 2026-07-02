@@ -13,3 +13,6 @@ export * from './activity-log-api';
 export * from './admin-users-api';
 export * from './library-admin-api';
 export * from './localization-api';
+export * from './api-keys-api';
+export * from './devices-api';
+export * from './logs-api';

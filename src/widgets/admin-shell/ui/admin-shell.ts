@@ -41,5 +41,8 @@ export class AdminShell {
     { label: 'Users', path: '/admin/users' },
     { label: 'Libraries', path: '/admin/libraries' },
     { label: 'Tasks', path: '/admin/tasks' },
+    { label: 'Devices', path: '/admin/devices' },
+    { label: 'API Keys', path: '/admin/keys' },
+    { label: 'Logs', path: '/admin/logs' },
   ];
 }

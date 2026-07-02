@@ -70,6 +70,19 @@ export const routes: Routes = [
             path: 'tasks',
             loadComponent: () => import('@pages/admin-tasks').then((m) => m.AdminTasksPage),
           },
+          {
+            path: 'devices',
+            loadComponent: () =>
+              import('@pages/admin-devices').then((m) => m.AdminDevicesPage),
+          },
+          {
+            path: 'keys',
+            loadComponent: () => import('@pages/admin-keys').then((m) => m.AdminKeysPage),
+          },
+          {
+            path: 'logs',
+            loadComponent: () => import('@pages/admin-logs').then((m) => m.AdminLogsPage),
+          },
         ],
       },
     ],

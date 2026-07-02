@@ -196,6 +196,45 @@ export interface VirtualFolderInfo {
   RefreshStatus?: string;
 }
 
+/** An issued access token — API keys have UserId unset. */
+export interface AuthenticationInfo {
+  Id: number;
+  AccessToken: string;
+  AppName?: string;
+  DeviceName?: string;
+  UserId?: string;
+  UserName?: string;
+  DateCreated?: string;
+  DateLastActivity?: string;
+}
+
+export interface AuthenticationInfoResult {
+  Items: AuthenticationInfo[];
+  TotalRecordCount: number;
+}
+
+export interface DeviceInfoDto {
+  Id: string;
+  Name?: string;
+  CustomName?: string;
+  AppName?: string;
+  AppVersion?: string;
+  LastUserName?: string;
+  DateLastActivity?: string;
+}
+
+export interface DevicesResult {
+  Items: DeviceInfoDto[];
+  TotalRecordCount: number;
+}
+
+export interface LogFile {
+  Name: string;
+  Size: number;
+  DateCreated?: string;
+  DateModified?: string;
+}
+
 export type LogSeverity = 'Trace' | 'Debug' | 'Information' | 'Warn' | 'Error' | 'Fatal';
 
 export interface ActivityLogEntry {
