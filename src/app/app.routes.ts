@@ -12,6 +12,12 @@ export const routes: Routes = [
     loadComponent: () => import('@pages/login').then((m) => m.LoginPage),
   },
   {
+    // Full-screen player lives outside the shell (no nav chrome).
+    path: 'player/:id',
+    canActivate: [authGuard],
+    loadComponent: () => import('@pages/player').then((m) => m.PlayerPage),
+  },
+  {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('@widgets/app-shell').then((m) => m.AppShell),
