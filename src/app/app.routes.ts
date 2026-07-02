@@ -48,6 +48,11 @@ export const routes: Routes = [
             loadComponent: () =>
               import('@pages/admin-dashboard').then((m) => m.AdminDashboardPage),
           },
+          {
+            path: 'activity',
+            loadComponent: () =>
+              import('@pages/admin-activity').then((m) => m.AdminActivityPage),
+          },
         ],
       },
     ],

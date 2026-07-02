@@ -114,6 +114,24 @@ export interface TaskResult {
   ErrorMessage?: string;
 }
 
+export type LogSeverity = 'Trace' | 'Debug' | 'Information' | 'Warn' | 'Error' | 'Fatal';
+
+export interface ActivityLogEntry {
+  Id: number;
+  Name: string;
+  Overview?: string;
+  ShortOverview?: string;
+  Type: string;
+  Date: string;
+  Severity: LogSeverity;
+  UserId?: string;
+}
+
+export interface ActivityLogResult {
+  Items: ActivityLogEntry[];
+  TotalRecordCount: number;
+}
+
 export interface TaskInfo {
   Id: string;
   Name: string;

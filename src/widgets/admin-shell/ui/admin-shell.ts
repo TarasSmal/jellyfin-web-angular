@@ -18,15 +18,17 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           aria-label="Admin sections"
           class="flex gap-1 overflow-x-auto md:flex-col md:overflow-visible"
         >
-          <a
-            routerLink="/admin"
-            routerLinkActive="bg-surface-raised text-text"
-            ariaCurrentWhenActive="page"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text"
-          >
-            Overview
-          </a>
+          @for (section of sections; track section.path) {
+            <a
+              [routerLink]="section.path"
+              routerLinkActive="bg-surface-raised text-text"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="shrink-0 rounded-lg px-3 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text"
+            >
+              {{ section.label }}
+            </a>
+          }
           @for (section of upcoming; track section) {
             <span
               aria-disabled="true"
@@ -45,5 +47,9 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   `,
 })
 export class AdminShell {
-  protected readonly upcoming = ['Activity', 'Users', 'Libraries', 'Tasks'];
+  protected readonly sections = [
+    { label: 'Overview', path: '/admin' },
+    { label: 'Activity', path: '/admin/activity' },
+  ];
+  protected readonly upcoming = ['Users', 'Libraries', 'Tasks'];
 }

@@ -9,3 +9,4 @@ export * from './user-data-api';
 export * from './playback-api';
 export * from './sessions-api';
 export * from './tasks-api';
+export * from './activity-log-api';
