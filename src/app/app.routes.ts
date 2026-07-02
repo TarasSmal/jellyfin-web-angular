@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, connectedGuard } from '@features/auth';
+import { adminGuard, authGuard, connectedGuard } from '@features/auth';
 
 export const routes: Routes = [
   {
@@ -37,6 +37,18 @@ export const routes: Routes = [
       {
         path: 'search',
         loadComponent: () => import('@pages/search').then((m) => m.SearchPage),
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        loadComponent: () => import('@widgets/admin-shell').then((m) => m.AdminShell),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('@pages/admin-dashboard').then((m) => m.AdminDashboardPage),
+          },
+        ],
       },
     ],
   },

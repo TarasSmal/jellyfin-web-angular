@@ -75,3 +75,52 @@ export interface ItemsResult {
   Items: BaseItemDto[];
   TotalRecordCount: number;
 }
+
+/** Full system info from /System/Info — admin-only. */
+export interface SystemInfo extends PublicSystemInfo {
+  OperatingSystemDisplayName?: string;
+  HasPendingRestart?: boolean;
+  WebSocketPortNumber?: number;
+}
+
+export interface PlayState {
+  PositionTicks?: number;
+  IsPaused?: boolean;
+  IsMuted?: boolean;
+  PlayMethod?: 'Transcode' | 'DirectStream' | 'DirectPlay' | (string & {});
+}
+
+/** A device connected to the server, playing something or idle. */
+export interface SessionInfo {
+  Id: string;
+  UserId?: string;
+  UserName?: string;
+  Client?: string;
+  DeviceName?: string;
+  DeviceId?: string;
+  ApplicationVersion?: string;
+  RemoteEndPoint?: string;
+  LastActivityDate?: string;
+  NowPlayingItem?: BaseItemDto;
+  PlayState?: PlayState;
+}
+
+export type TaskState = 'Idle' | 'Cancelling' | 'Running';
+
+export interface TaskResult {
+  StartTimeUtc?: string;
+  EndTimeUtc?: string;
+  Status?: 'Completed' | 'Failed' | 'Cancelled' | 'Aborted' | (string & {});
+  ErrorMessage?: string;
+}
+
+export interface TaskInfo {
+  Id: string;
+  Name: string;
+  State: TaskState;
+  /** Only present while the task is running. */
+  CurrentProgressPercentage?: number;
+  Description?: string;
+  Category?: string;
+  LastExecutionResult?: TaskResult;
+}

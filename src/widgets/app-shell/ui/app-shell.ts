@@ -29,6 +29,15 @@ import { SessionStore } from '@entities/user';
             {{ view.Name }}
           </a>
         }
+        @if (session.isAdmin()) {
+          <a
+            routerLink="/admin"
+            routerLinkActive="text-text"
+            class="shrink-0 text-sm font-medium text-text-muted transition-colors hover:text-text"
+          >
+            Admin
+          </a>
+        }
         <span class="flex-1"></span>
         <input
           type="search"

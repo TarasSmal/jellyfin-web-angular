@@ -1,7 +1,14 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResourceRequest } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
+import { ApiConfig } from './api-config';
 import { PublicSystemInfo } from './types';
+
+/** Full system info — the server only answers this for admin tokens. */
+export function systemInfoRequest(config: ApiConfig): HttpResourceRequest | undefined {
+  if (!config.isAuthenticated()) return undefined;
+  return { url: config.url('/System/Info') };
+}
 
 @Injectable({ providedIn: 'root' })
 export class SystemApi {
