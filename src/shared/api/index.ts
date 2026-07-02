@@ -18,3 +18,4 @@ export * from './devices-api';
 export * from './logs-api';
 export * from './socket';
 export * from './system-config-api';
+export * from './plugins-api';

@@ -61,6 +61,7 @@ Admin API note: all admin endpoints authorize via the same token — the server 
 - Jellyfin 12: `POST /Users/{id}/Password` no longer exists and `ResetPassword: true` is rejected (400). Admin password changes are `POST /Users/Password?userId=` with `{ NewPw }`. When an endpoint 400s, check the server's own spec at `/api-docs/openapi.json` — it's authoritative for this server version.
 - `POST /Users/{id}/Policy` replaces the whole policy object — always round-trip every field from GET (see `UserPolicy`'s index signature in `shared/api/types.ts`).
 - Jellyfin 12 WebSocket (`/socket`) auth: the query param is `ApiKey` (`?ApiKey=<token>&deviceId=`) — the older `api_key` name gets a 403 handshake. Live feeds need explicit subscriptions (`SessionsStart "0,1500"`, `ScheduledTasksInfoStart`); `RefreshProgress`/`LibraryChanged` are pushed unsubscribed. See `shared/api/socket.ts`.
+- `POST /Plugins/{id}/{version}/Enable|Disable` is broken for **bundled** plugins (`CanUninstall: false`): the server flips in-memory state, then throws persisting the manifest — responses alternate 204/404 and the status wobbles until a restart. The plugins page only offers the toggle for uninstallable plugins. The packages API (`/Packages`) is camelCase on the wire, unlike everything else.
 
 ## Glossary & ADRs
 

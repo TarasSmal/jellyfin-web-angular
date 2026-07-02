@@ -76,6 +76,11 @@ export const routes: Routes = [
             loadComponent: () => import('@pages/admin-tasks').then((m) => m.AdminTasksPage),
           },
           {
+            path: 'plugins',
+            loadComponent: () =>
+              import('@pages/admin-plugins').then((m) => m.AdminPluginsPage),
+          },
+          {
             path: 'devices',
             loadComponent: () =>
               import('@pages/admin-devices').then((m) => m.AdminDevicesPage),

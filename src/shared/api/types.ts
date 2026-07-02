@@ -238,6 +238,43 @@ export interface VirtualFolderInfo {
   RefreshStatus?: string;
 }
 
+export type PluginStatus =
+  | 'Active'
+  | 'Restart'
+  | 'Deleted'
+  | 'Superseded'
+  | 'Superceded'
+  | 'Malfunctioned'
+  | 'NotSupported'
+  | 'Disabled';
+
+export interface PluginInfo {
+  Id: string;
+  Name: string;
+  Version: string;
+  Description?: string;
+  CanUninstall?: boolean;
+  Status?: PluginStatus;
+}
+
+/** NOTE: the packages API is camelCase on the wire, unlike everything else. */
+export interface PackageVersionInfo {
+  version: string;
+  changelog?: string;
+  targetAbi?: string;
+  repositoryName?: string;
+}
+
+export interface PackageInfo {
+  name: string;
+  description?: string;
+  overview?: string;
+  owner?: string;
+  category?: string;
+  guid: string;
+  versions: PackageVersionInfo[];
+}
+
 /** An issued access token — API keys have UserId unset. */
 export interface AuthenticationInfo {
   Id: number;
