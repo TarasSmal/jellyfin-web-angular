@@ -62,6 +62,10 @@ export const routes: Routes = [
             loadComponent: () =>
               import('@pages/admin-libraries').then((m) => m.AdminLibrariesPage),
           },
+          {
+            path: 'tasks',
+            loadComponent: () => import('@pages/admin-tasks').then((m) => m.AdminTasksPage),
+          },
         ],
       },
     ],

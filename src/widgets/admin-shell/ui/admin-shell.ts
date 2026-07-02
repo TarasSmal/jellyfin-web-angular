@@ -1,10 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-/**
- * Layout for the admin dashboard: left section nav + content outlet.
- * Sections beyond Overview are placeholders until their phase-2 step lands.
- */
+/** Layout for the admin dashboard: left section nav + content outlet. */
 @Component({
   selector: 'app-admin-shell',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
@@ -29,15 +26,6 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
               {{ section.label }}
             </a>
           }
-          @for (section of upcoming; track section) {
-            <span
-              aria-disabled="true"
-              title="Coming soon"
-              class="shrink-0 cursor-not-allowed rounded-lg px-3 py-2 text-sm text-text-faint"
-            >
-              {{ section }}
-            </span>
-          }
         </nav>
       </aside>
       <div class="min-w-0 flex-1">
@@ -52,6 +40,6 @@ export class AdminShell {
     { label: 'Activity', path: '/admin/activity' },
     { label: 'Users', path: '/admin/users' },
     { label: 'Libraries', path: '/admin/libraries' },
+    { label: 'Tasks', path: '/admin/tasks' },
   ];
-  protected readonly upcoming = ['Tasks'];
 }
