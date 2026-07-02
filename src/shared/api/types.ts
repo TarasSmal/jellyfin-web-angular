@@ -12,14 +12,26 @@ export interface PublicSystemInfo {
   StartupWizardCompleted?: boolean;
 }
 
+/**
+ * POST /Users/{id}/Policy replaces the whole policy, so edits must round-trip
+ * every field the server sent — hence the index signature.
+ */
+export interface UserPolicy {
+  IsAdministrator?: boolean;
+  IsDisabled?: boolean;
+  IsHidden?: boolean;
+  [key: string]: unknown;
+}
+
 export interface UserDto {
   Id: string;
   Name: string;
   ServerId?: string;
   PrimaryImageTag?: string;
-  Policy?: {
-    IsAdministrator?: boolean;
-  };
+  HasPassword?: boolean;
+  LastLoginDate?: string;
+  LastActivityDate?: string;
+  Policy?: UserPolicy;
 }
 
 export interface AuthenticationResult {

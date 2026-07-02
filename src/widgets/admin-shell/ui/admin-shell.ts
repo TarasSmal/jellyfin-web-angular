@@ -50,6 +50,7 @@ export class AdminShell {
   protected readonly sections = [
     { label: 'Overview', path: '/admin' },
     { label: 'Activity', path: '/admin/activity' },
+    { label: 'Users', path: '/admin/users' },
   ];
-  protected readonly upcoming = ['Users', 'Libraries', 'Tasks'];
+  protected readonly upcoming = ['Libraries', 'Tasks'];
 }
