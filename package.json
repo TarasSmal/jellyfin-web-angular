@@ -6,17 +6,22 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "ng lint && npm run lint:fsd",
+    "lint:fsd": "steiger ./src"
   },
   "private": true,
   "packageManager": "npm@11.13.0",
   "dependencies": {
+    "@angular/cdk": "^22.0.3",
     "@angular/common": "^22.0.0",
     "@angular/compiler": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0",
     "@angular/platform-browser": "^22.0.0",
     "@angular/router": "^22.0.0",
+    "@spartan-ng/brain": "^1.0.3",
+    "hls.js": "^1.6.16",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
@@ -24,12 +29,19 @@
     "@angular/build": "^22.0.5",
     "@angular/cli": "^22.0.5",
     "@angular/compiler-cli": "^22.0.0",
+    "@eslint/js": "^10.0.1",
+    "@feature-sliced/steiger-plugin": "^0.6.0",
+    "@spartan-ng/cli": "^1.0.3",
     "@tailwindcss/postcss": "^4.1.12",
+    "angular-eslint": "22.0.0",
+    "eslint": "^10.3.0",
     "jsdom": "^28.0.0",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
+    "steiger": "^0.5.13",
     "tailwindcss": "^4.1.12",
     "typescript": "~6.0.2",
+    "typescript-eslint": "8.60.1",
     "vitest": "^4.0.8"
   }
 }
