@@ -48,6 +48,48 @@ export interface ParentalRating {
   Value?: number | null;
 }
 
+/** /Localization/Options — display languages. */
+export interface LocalizationOption {
+  Name: string;
+  Value: string;
+}
+
+/** /Localization/Cultures — metadata languages. */
+export interface CultureDto {
+  DisplayName: string;
+  TwoLetterISOLanguageName: string;
+}
+
+/** /Localization/Countries. */
+export interface CountryInfo {
+  DisplayName: string;
+  TwoLetterISORegionName: string;
+}
+
+/**
+ * POST /System/Configuration replaces the whole config, so edits must
+ * round-trip every field the server sent — hence the index signature.
+ */
+export interface ServerConfiguration {
+  ServerName?: string;
+  UICulture?: string;
+  QuickConnectAvailable?: boolean;
+  EnableFolderView?: boolean;
+  PreferredMetadataLanguage?: string;
+  MetadataCountryCode?: string;
+  MinResumePct?: number;
+  MaxResumePct?: number;
+  MinResumeDurationSeconds?: number;
+  /** Bits per second; 0 = unlimited. */
+  RemoteClientBitrateLimit?: number;
+  EnableGroupingMoviesIntoCollections?: boolean;
+  EnableGroupingShowsIntoCollections?: boolean;
+  DisplaySpecialsWithinSeasons?: boolean;
+  ActivityLogRetentionDays?: number | null;
+  LogFileRetentionDays?: number;
+  [key: string]: unknown;
+}
+
 export interface UserDto {
   Id: string;
   Name: string;
