@@ -1,33 +1,85 @@
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { AuthService } from '@features/auth';
-import { SessionStore } from '@entities/user';
+import { Component, computed, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import {
+  ApiConfig,
+  BaseItemDto,
+  ItemsResult,
+  latestItemsRequest,
+  nextUpRequest,
+  resumeItemsRequest,
+  userViewsRequest,
+} from '@shared/api';
+import { HeroBillboard } from '@widgets/hero-billboard';
+import { MediaRail } from '@widgets/media-rail';
 
 @Component({
   selector: 'app-home-page',
+  imports: [HeroBillboard, MediaRail],
   template: `
-    <main class="mx-auto max-w-5xl space-y-4 p-8">
-      <h1 class="text-2xl font-bold">
-        Welcome{{ session.user()?.Name ? ', ' + session.user()!.Name : '' }}
-      </h1>
-      <p class="text-text-muted">Home page with rails lands in the next step.</p>
-      <button
-        type="button"
-        class="rounded-lg border border-border px-4 py-2 text-text-muted transition-colors hover:text-text"
-        (click)="logout()"
-      >
-        Sign out
-      </button>
+    <main class="pb-16">
+      @if (hero(); as heroItem) {
+        <app-hero-billboard [item]="heroItem" />
+      } @else {
+        <div class="aspect-[16/8] max-h-[75dvh] min-h-96 w-full animate-pulse bg-surface"></div>
+      }
+
+      <div class="relative z-10 -mt-8 space-y-10">
+        <app-media-rail
+          title="Continue Watching"
+          shape="thumb"
+          [items]="resume.value()?.Items"
+          [loading]="resume.isLoading()"
+        />
+        <app-media-rail
+          title="Next Up"
+          shape="thumb"
+          [items]="nextUp.value()?.Items"
+          [loading]="nextUp.isLoading()"
+        />
+        <app-media-rail
+          title="Latest Movies"
+          [items]="latestMovies.value()"
+          [loading]="latestMovies.isLoading()"
+        />
+        <app-media-rail
+          title="Latest Shows"
+          [items]="latestShows.value()"
+          [loading]="latestShows.isLoading()"
+        />
+      </div>
     </main>
   `,
 })
 export class HomePage {
-  private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
-  protected readonly session = inject(SessionStore);
+  private readonly config = inject(ApiConfig);
 
-  async logout(): Promise<void> {
-    await this.auth.logout();
-    await this.router.navigate(['/login']);
-  }
+  protected readonly views = httpResource<ItemsResult>(() => userViewsRequest(this.config));
+  protected readonly resume = httpResource<ItemsResult>(() => resumeItemsRequest(this.config));
+  protected readonly nextUp = httpResource<ItemsResult>(() => nextUpRequest(this.config));
+
+  private readonly moviesViewId = computed(
+    () => this.views.value()?.Items.find((v) => v.CollectionType === 'movies')?.Id,
+  );
+  private readonly showsViewId = computed(
+    () => this.views.value()?.Items.find((v) => v.CollectionType === 'tvshows')?.Id,
+  );
+
+  protected readonly latestMovies = httpResource<BaseItemDto[]>(() => {
+    const id = this.moviesViewId();
+    return id ? latestItemsRequest(this.config, id) : undefined;
+  });
+  protected readonly latestShows = httpResource<BaseItemDto[]>(() => {
+    const id = this.showsViewId();
+    return id ? latestItemsRequest(this.config, id) : undefined;
+  });
+
+  /** Featured item: newest movie with a backdrop, else newest show, else a resume item. */
+  protected readonly hero = computed<BaseItemDto | undefined>(() => {
+    const candidates = [
+      ...(this.latestMovies.value() ?? []),
+      ...(this.latestShows.value() ?? []),
+      ...(this.resume.value()?.Items ?? []),
+    ];
+    return candidates.find((i) => i.BackdropImageTags?.length) ?? candidates[0];
+  });
 }

@@ -14,7 +14,13 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('@pages/home').then((m) => m.HomePage),
+    loadComponent: () => import('@widgets/app-shell').then((m) => m.AppShell),
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('@pages/home').then((m) => m.HomePage),
+      },
+    ],
   },
   { path: '**', redirectTo: '' },
 ];
