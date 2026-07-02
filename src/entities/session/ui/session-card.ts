@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { SessionInfo } from '@shared/api';
 import { formatClock } from '@shared/lib/clock';
 import { ticksToSeconds } from '@shared/lib/ticks';
@@ -50,6 +50,26 @@ const PLAY_METHOD_LABELS: Record<string, string> = {
             {{ session().Client }} · {{ session().DeviceName }}
           </p>
         }
+        @if (controls() && session().SupportsRemoteControl) {
+          <div class="mt-2 flex gap-1.5">
+            <button
+              type="button"
+              class="rounded-lg border border-border px-2 py-1 text-xs text-text-muted transition-colors hover:text-text"
+              (click)="messageRequested.emit()"
+            >
+              Message
+            </button>
+            @if (session().NowPlayingItem) {
+              <button
+                type="button"
+                class="rounded-lg border border-border px-2 py-1 text-xs text-danger transition-colors hover:border-danger"
+                (click)="stopRequested.emit()"
+              >
+                Stop playback
+              </button>
+            }
+          </div>
+        }
       </div>
     </article>
   `,
@@ -58,6 +78,10 @@ export class SessionCard {
   readonly session = input.required<SessionInfo>();
   /** Resolved by the caller (image URL building lives with the item entity). */
   readonly posterUrl = input<string | null>(null);
+  /** Show remote-control actions (admin contexts only). */
+  readonly controls = input(false);
+  readonly messageRequested = output<void>();
+  readonly stopRequested = output<void>();
 
   protected readonly title = computed(() => {
     const item = this.session().NowPlayingItem;

@@ -115,6 +115,30 @@ export interface SessionInfo {
   LastActivityDate?: string;
   NowPlayingItem?: BaseItemDto;
   PlayState?: PlayState;
+  SupportsRemoteControl?: boolean;
+}
+
+export interface FolderStorageDto {
+  Path: string;
+  FreeSpace: number;
+  UsedSpace: number;
+  StorageType?: string;
+  DeviceId?: string;
+}
+
+export interface LibraryStorageDto {
+  Id: string;
+  Name: string;
+  Folders: FolderStorageDto[];
+}
+
+export interface SystemStorageDto {
+  ProgramDataFolder?: FolderStorageDto;
+  CacheFolder?: FolderStorageDto;
+  LogFolder?: FolderStorageDto;
+  InternalMetadataFolder?: FolderStorageDto;
+  TranscodingTempFolder?: FolderStorageDto;
+  Libraries?: LibraryStorageDto[];
 }
 
 export type TaskState = 'Idle' | 'Cancelling' | 'Running';
