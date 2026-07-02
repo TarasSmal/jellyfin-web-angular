@@ -56,6 +56,11 @@ Admin API note: all admin endpoints authorize via the same token — the server 
 - Media elements can't send the auth header; stream/image-adjacent URLs carry `api_key=` as a query param (see `PlaybackApi`).
 - steiger fails slices without segments — don't put `.ts` files directly in a slice root.
 
+## Gotchas learned in phase 2
+
+- Jellyfin 12: `POST /Users/{id}/Password` no longer exists and `ResetPassword: true` is rejected (400). Admin password changes are `POST /Users/Password?userId=` with `{ NewPw }`. When an endpoint 400s, check the server's own spec at `/api-docs/openapi.json` — it's authoritative for this server version.
+- `POST /Users/{id}/Policy` replaces the whole policy object — always round-trip every field from GET (see `UserPolicy`'s index signature in `shared/api/types.ts`).
+
 ## Glossary & ADRs
 
 - `CONTEXT.md` — Item, Library/View, Rail, Hero Billboard, Continue Watching vs Next Up, Direct Play vs Transcode, Play Session.
