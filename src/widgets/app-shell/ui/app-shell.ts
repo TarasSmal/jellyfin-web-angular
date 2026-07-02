@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ApiConfig, ItemsResult, userViewsRequest } from '@shared/api';
@@ -10,7 +10,7 @@ import { SessionStore } from '@entities/user';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <header class="fixed inset-x-0 top-0 z-40 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-      <nav class="flex h-16 items-center gap-6 px-6 md:px-12">
+      <nav class="flex h-16 items-center gap-4 overflow-x-auto px-4 md:gap-6 md:px-12">
         <a routerLink="/" class="text-xl font-bold tracking-tight text-accent">Jellyfin</a>
         <a
           routerLink="/"
@@ -24,12 +24,19 @@ import { SessionStore } from '@entities/user';
           <a
             [routerLink]="['/library', view.Id]"
             routerLinkActive="text-text"
-            class="text-sm font-medium text-text-muted transition-colors hover:text-text"
+            class="shrink-0 text-sm font-medium text-text-muted transition-colors hover:text-text"
           >
             {{ view.Name }}
           </a>
         }
         <span class="flex-1"></span>
+        <input
+          type="search"
+          placeholder="Search"
+          class="w-24 shrink-0 rounded-full border border-border bg-surface/80 px-4 py-1.5 text-sm placeholder:text-text-faint focus:w-40 focus:border-accent focus:outline-none transition-all sm:w-40 sm:focus:w-56"
+          [value]="searchTerm()"
+          (input)="onSearch($event)"
+        />
         <span class="hidden text-sm text-text-muted sm:inline">{{ session.user()?.Name }}</span>
         <button
           type="button"
@@ -57,6 +64,20 @@ export class AppShell {
         (v) => v.CollectionType === 'movies' || v.CollectionType === 'tvshows',
       ) ?? [],
   );
+
+  protected readonly searchTerm = signal('');
+  private searchDebounce: ReturnType<typeof setTimeout> | null = null;
+
+  protected onSearch(event: Event): void {
+    const term = (event.target as HTMLInputElement).value;
+    this.searchTerm.set(term);
+    if (this.searchDebounce) clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => {
+      if (term.trim()) {
+        void this.router.navigate(['/search'], { queryParams: { q: term.trim() } });
+      }
+    }, 300);
+  }
 
   async logout(): Promise<void> {
     await this.auth.logout();

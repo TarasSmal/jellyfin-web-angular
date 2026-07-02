@@ -109,6 +109,25 @@ export function itemsRequest(config: ApiConfig, query: ItemsQuery): Req {
   return { url: config.url('/Items'), params };
 }
 
+/** Title search across movies and series. */
+export function searchRequest(config: ApiConfig, term: string): Req {
+  const userId = config.userId();
+  if (!userId || !term.trim()) return undefined;
+  return {
+    url: config.url('/Items'),
+    params: {
+      userId,
+      searchTerm: term.trim(),
+      recursive: true,
+      includeItemTypes: 'Movie,Series',
+      limit: 40,
+      fields: ITEM_FIELDS,
+      enableImageTypes: IMAGE_TYPES,
+      imageTypeLimit: 1,
+    },
+  };
+}
+
 /** Genres present inside one library, for the filter dropdown. */
 export function genresRequest(config: ApiConfig, parentId: string): Req {
   const userId = config.userId();

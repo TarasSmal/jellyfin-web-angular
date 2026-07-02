@@ -19,3 +19,7 @@ Glossary of the language used in this project. Terms are added as they crystalli
 **Direct Play** — Playback where the browser plays the original file untouched; server does no work.
 
 **Transcode** — Playback where the server converts the file (usually to HLS) because the browser cannot play the original codec/container.
+
+**Play Session** — One continuous playback attempt of one item, identified by the server's PlaySessionId. Progress reports belong to a session; switching audio tracks ends one session and starts another.
+
+**View** — Jellyfin's name for what users see as a Library. The API says "views"; this project says Library everywhere outside `shared/api`.

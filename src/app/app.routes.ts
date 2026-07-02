@@ -34,6 +34,10 @@ export const routes: Routes = [
         path: 'item/:id',
         loadComponent: () => import('@pages/item').then((m) => m.ItemPage),
       },
+      {
+        path: 'search',
+        loadComponent: () => import('@pages/search').then((m) => m.SearchPage),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
