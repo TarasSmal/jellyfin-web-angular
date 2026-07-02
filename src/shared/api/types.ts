@@ -261,5 +261,7 @@ export interface TaskInfo {
   CurrentProgressPercentage?: number;
   Description?: string;
   Category?: string;
+  /** The socket feed includes hidden tasks; the REST call filters them. */
+  IsHidden?: boolean;
   LastExecutionResult?: TaskResult;
 }

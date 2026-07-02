@@ -1,10 +1,13 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { filter, throttleTime } from 'rxjs';
 import { FormField, form, required } from '@angular/forms/signals';
 import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
 import {
   ApiConfig,
   CollectionTypeOption,
+  JellyfinSocket,
   LibraryAdminApi,
   VirtualFolderInfo,
   virtualFoldersRequest,
@@ -12,8 +15,6 @@ import {
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
 import { ToastService } from '@shared/ui/toast';
-
-const POLL_INTERVAL_MS = 10_000;
 
 const COLLECTION_TYPES: { value: CollectionTypeOption; label: string }[] = [
   { value: 'movies', label: 'Movies' },
@@ -226,9 +227,17 @@ export class AdminLibrariesPage {
   });
 
   constructor() {
-    // Reflect scan progress (RefreshStatus/RefreshProgress) while the page is open.
-    const poll = setInterval(() => this.libraries.reload(), POLL_INTERVAL_MS);
-    inject(DestroyRef).onDestroy(() => clearInterval(poll));
+    // Scan progress arrives as pushed RefreshProgress/LibraryChanged events;
+    // throttle because RefreshProgress fires many times per second mid-scan.
+    inject(JellyfinSocket)
+      .messages$.pipe(
+        filter(
+          (m) => m.MessageType === 'RefreshProgress' || m.MessageType === 'LibraryChanged',
+        ),
+        throttleTime(2_000, undefined, { leading: true, trailing: true }),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.libraries.reload());
   }
 
   protected typeLabel(type: CollectionTypeOption | undefined): string {

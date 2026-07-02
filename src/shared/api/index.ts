@@ -16,3 +16,4 @@ export * from './localization-api';
 export * from './api-keys-api';
 export * from './devices-api';
 export * from './logs-api';
+export * from './socket';

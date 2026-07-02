@@ -1,10 +1,9 @@
 import { Component, DestroyRef, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
-import { ApiConfig, TaskInfo, TasksApi, scheduledTasksRequest } from '@shared/api';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ApiConfig, JellyfinSocket, TaskInfo, TasksApi, scheduledTasksRequest } from '@shared/api';
 import { ToastService } from '@shared/ui/toast';
-
-const POLL_INTERVAL_MS = 10_000;
 
 @Component({
   selector: 'app-admin-tasks-page',
@@ -97,7 +96,7 @@ export class AdminTasksPage {
   protected readonly tasks = httpResource<TaskInfo[]>(() => scheduledTasksRequest(this.config));
 
   protected readonly groups = computed(() => {
-    const all = this.tasks.value();
+    const all = this.tasks.value()?.filter((t) => !t.IsHidden);
     if (!all) return undefined;
     const byCategory = new Map<string, TaskInfo[]>();
     for (const task of all) {
@@ -115,8 +114,12 @@ export class AdminTasksPage {
   protected readonly skeletonRows = Array.from({ length: 8 }, (_, i) => i);
 
   constructor() {
-    const poll = setInterval(() => this.tasks.reload(), POLL_INTERVAL_MS);
-    inject(DestroyRef).onDestroy(() => clearInterval(poll));
+    const socket = inject(JellyfinSocket);
+    socket.start('ScheduledTasksInfo');
+    socket.messages$.pipe(takeUntilDestroyed()).subscribe((message) => {
+      if (message.MessageType === 'ScheduledTasksInfo') this.tasks.set(message.Data as TaskInfo[]);
+    });
+    inject(DestroyRef).onDestroy(() => socket.stop('ScheduledTasksInfo'));
   }
 
   protected progress(task: TaskInfo): number {

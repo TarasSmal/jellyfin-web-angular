@@ -1,8 +1,10 @@
 import { Component, DestroyRef, computed, inject } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ApiConfig,
   FolderStorageDto,
+  JellyfinSocket,
   SessionInfo,
   SessionsApi,
   SystemApi,
@@ -20,8 +22,6 @@ import { formatBytes } from '@shared/lib/bytes';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
 import { ToastService } from '@shared/ui/toast';
-
-const POLL_INTERVAL_MS = 10_000;
 
 @Component({
   selector: 'app-admin-dashboard-page',
@@ -182,12 +182,19 @@ export class AdminDashboardPage {
   protected readonly tasks = httpResource<TaskInfo[]>(() => scheduledTasksRequest(this.config));
 
   constructor() {
-    // Sessions and task progress go stale fast; WebSocket push is a later step.
-    const poll = setInterval(() => {
-      this.sessions.reload();
-      this.tasks.reload();
-    }, POLL_INTERVAL_MS);
-    inject(DestroyRef).onDestroy(() => clearInterval(poll));
+    // Live updates: the socket pushes full session/task snapshots into the
+    // resources; the initial HTTP fetch covers the gap before the first push.
+    const socket = inject(JellyfinSocket);
+    socket.start('Sessions');
+    socket.start('ScheduledTasksInfo');
+    socket.messages$.pipe(takeUntilDestroyed()).subscribe((message) => {
+      if (message.MessageType === 'Sessions') this.sessions.set(message.Data as SessionInfo[]);
+      if (message.MessageType === 'ScheduledTasksInfo') this.tasks.set(message.Data as TaskInfo[]);
+    });
+    inject(DestroyRef).onDestroy(() => {
+      socket.stop('Sessions');
+      socket.stop('ScheduledTasksInfo');
+    });
   }
 
   protected readonly nowPlaying = computed(() =>
@@ -200,7 +207,7 @@ export class AdminDashboardPage {
   );
 
   protected readonly runningTasks = computed(() =>
-    (this.tasks.value() ?? []).filter((t) => t.State !== 'Idle'),
+    (this.tasks.value() ?? []).filter((t) => t.State !== 'Idle' && !t.IsHidden),
   );
 
   /** One entry per distinct disk: config, cache, and every library mount. */
