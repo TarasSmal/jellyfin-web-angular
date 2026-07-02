@@ -11,10 +11,11 @@ import { cardSubtitle, cardTitle } from '../lib/item-labels';
     <a
       [routerLink]="['/item', linkId()]"
       class="group block shrink-0 snap-start"
-      [class.w-36]="shape() === 'poster'"
-      [class.md:w-44]="shape() === 'poster'"
-      [class.w-64]="shape() === 'thumb'"
-      [class.md:w-72]="shape() === 'thumb'"
+      [class.w-full]="fluid()"
+      [class.w-36]="!fluid() && shape() === 'poster'"
+      [class.md:w-44]="!fluid() && shape() === 'poster'"
+      [class.w-64]="!fluid() && shape() === 'thumb'"
+      [class.md:w-72]="!fluid() && shape() === 'thumb'"
     >
       <div
         class="relative overflow-hidden rounded-lg bg-surface ring-accent transition group-hover:ring-2"
@@ -51,6 +52,8 @@ export class ItemCard {
 
   readonly item = input.required<BaseItemDto>();
   readonly shape = input<'poster' | 'thumb'>('poster');
+  /** Fill the parent cell (grid layouts) instead of fixed rail widths. */
+  readonly fluid = input(false);
 
   protected readonly title = computed(() => cardTitle(this.item()));
   protected readonly subtitle = computed(() => cardSubtitle(this.item()));

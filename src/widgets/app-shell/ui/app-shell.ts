@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { httpResource } from '@angular/common/http';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { ApiConfig, ItemsResult, userViewsRequest } from '@shared/api';
 import { AuthService } from '@features/auth';
 import { SessionStore } from '@entities/user';
 
@@ -18,6 +20,15 @@ import { SessionStore } from '@entities/user';
         >
           Home
         </a>
+        @for (view of libraries(); track view.Id) {
+          <a
+            [routerLink]="['/library', view.Id]"
+            routerLinkActive="text-text"
+            class="text-sm font-medium text-text-muted transition-colors hover:text-text"
+          >
+            {{ view.Name }}
+          </a>
+        }
         <span class="flex-1"></span>
         <span class="hidden text-sm text-text-muted sm:inline">{{ session.user()?.Name }}</span>
         <button
@@ -35,7 +46,17 @@ import { SessionStore } from '@entities/user';
 export class AppShell {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly config = inject(ApiConfig);
   protected readonly session = inject(SessionStore);
+
+  private readonly views = httpResource<ItemsResult>(() => userViewsRequest(this.config));
+  /** Only video libraries get nav links — phase-1 scope is movies + TV. */
+  protected readonly libraries = computed(
+    () =>
+      this.views.value()?.Items.filter(
+        (v) => v.CollectionType === 'movies' || v.CollectionType === 'tvshows',
+      ) ?? [],
+  );
 
   async logout(): Promise<void> {
     await this.auth.logout();

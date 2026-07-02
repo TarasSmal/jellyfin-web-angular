@@ -45,6 +45,57 @@ export function nextUpRequest(config: ApiConfig, limit = 12): Req {
   };
 }
 
+/** One item with full detail fields. */
+export function itemRequest(config: ApiConfig, itemId: string): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return { url: config.url(`/Items/${itemId}`), params: { userId } };
+}
+
+export interface ItemsQuery {
+  parentId: string;
+  /** Comma-separated Jellyfin kinds, e.g. 'Movie' or 'Series'. */
+  includeItemTypes?: string;
+  sortBy?: 'SortName' | 'DateCreated' | 'CommunityRating' | 'ProductionYear';
+  sortOrder?: 'Ascending' | 'Descending';
+  unplayedOnly?: boolean;
+  genre?: string;
+  startIndex?: number;
+  limit?: number;
+}
+
+/** Paged, sorted, filtered browse of a library's contents. */
+export function itemsRequest(config: ApiConfig, query: ItemsQuery): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  const params: Record<string, string | number | boolean> = {
+    userId,
+    parentId: query.parentId,
+    recursive: true,
+    // Server display preferences may group movies into their collections;
+    // the grid always shows the movies themselves.
+    collapseBoxSetItems: false,
+    fields: ITEM_FIELDS,
+    enableImageTypes: IMAGE_TYPES,
+    imageTypeLimit: 1,
+    sortBy: query.sortBy ?? 'SortName',
+    sortOrder: query.sortOrder ?? 'Ascending',
+    startIndex: query.startIndex ?? 0,
+    limit: query.limit ?? 100,
+  };
+  if (query.includeItemTypes) params['includeItemTypes'] = query.includeItemTypes;
+  if (query.unplayedOnly) params['filters'] = 'IsUnplayed';
+  if (query.genre) params['genres'] = query.genre;
+  return { url: config.url('/Items'), params };
+}
+
+/** Genres present inside one library, for the filter dropdown. */
+export function genresRequest(config: ApiConfig, parentId: string): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return { url: config.url('/Genres'), params: { userId, parentId, sortBy: 'SortName' } };
+}
+
 /** Most recently added items of one library. Returns a bare array, not ItemsResult. */
 export function latestItemsRequest(config: ApiConfig, parentId: string, limit = 16): Req {
   const userId = config.userId();
