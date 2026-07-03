@@ -30,9 +30,7 @@ export class AdminUsersApi {
 
   /** `policy` must be the complete policy object — see UserPolicy. */
   updatePolicy(userId: string, policy: UserPolicy): Promise<void> {
-    return firstValueFrom(
-      this.http.post<void>(this.config.url(`/Users/${userId}/Policy`), policy),
-    );
+    return firstValueFrom(this.http.post<void>(this.config.url(`/Users/${userId}/Policy`), policy));
   }
 
   /**

@@ -36,9 +36,13 @@ export class PluginsApi {
   /** Starts a background download+install; the plugin lands after a restart. */
   install(name: string, assemblyGuid: string, version?: string): Promise<void> {
     return firstValueFrom(
-      this.http.post<void>(this.config.url(`/Packages/Installed/${encodeURIComponent(name)}`), null, {
-        params: { assemblyGuid, ...(version ? { version } : {}) },
-      }),
+      this.http.post<void>(
+        this.config.url(`/Packages/Installed/${encodeURIComponent(name)}`),
+        null,
+        {
+          params: { assemblyGuid, ...(version ? { version } : {}) },
+        },
+      ),
     );
   }
 }

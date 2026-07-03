@@ -19,7 +19,9 @@ export class ApiConfig {
   readonly userId = this._userId.asReadonly();
 
   readonly isConnected = computed(() => this._serverUrl() !== null);
-  readonly isAuthenticated = computed(() => this._accessToken() !== null && this._userId() !== null);
+  readonly isAuthenticated = computed(
+    () => this._accessToken() !== null && this._userId() !== null,
+  );
 
   /** Prefix a relative Jellyfin API path with the configured server URL. */
   url(path: string): string {

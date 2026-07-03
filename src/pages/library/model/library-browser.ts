@@ -85,10 +85,14 @@ export class LibraryBrowser {
     if (!req) return;
     try {
       const result = await firstValueFrom(
-        this.http.get<ItemsResult>(req.url, { params: req.params as Record<string, string | number | boolean> }),
+        this.http.get<ItemsResult>(req.url, {
+          params: req.params as Record<string, string | number | boolean>,
+        }),
       );
       if (seq !== this.requestSeq) return; // superseded by a newer request
-      this.items.update((existing) => (startIndex === 0 ? result.Items : [...existing, ...result.Items]));
+      this.items.update((existing) =>
+        startIndex === 0 ? result.Items : [...existing, ...result.Items],
+      );
       this.total.set(result.TotalRecordCount);
     } catch {
       if (seq === this.requestSeq) this.error.set(true);

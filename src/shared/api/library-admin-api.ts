@@ -16,7 +16,11 @@ export class LibraryAdminApi {
   private readonly http = inject(HttpClient);
   private readonly config = inject(ApiConfig);
 
-  createLibrary(name: string, collectionType: CollectionTypeOption, paths: string[]): Promise<void> {
+  createLibrary(
+    name: string,
+    collectionType: CollectionTypeOption,
+    paths: string[],
+  ): Promise<void> {
     return firstValueFrom(
       this.http.post<void>(this.config.url('/Library/VirtualFolders'), null, {
         params: { name, collectionType, refreshLibrary: false, ...(paths.length ? { paths } : {}) },

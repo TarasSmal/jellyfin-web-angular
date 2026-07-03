@@ -1,0 +1,59 @@
+<article class="flex gap-3 rounded-xl border border-border bg-surface p-3">
+  @if (posterUrl(); as url) {
+    <img [src]="url" alt="" class="h-20 w-14 shrink-0 rounded-md object-cover" />
+  }
+  <div class="min-w-0 flex-1 self-center">
+    @if (session().NowPlayingItem) {
+      <p class="truncate font-medium">{{ title() }}</p>
+      <p class="truncate text-sm text-text-muted">
+        {{ session().UserName }} · {{ session().DeviceName }}
+      </p>
+      <p class="mt-0.5 truncate text-xs text-text-muted">
+        {{ session().PlayState?.IsPaused ? 'Paused' : 'Playing' }}
+        @if (playMethod(); as method) {
+          · {{ method }}
+        }
+        @if (positionLabel(); as position) {
+          · {{ position }}
+        }
+      </p>
+      @if (progress() !== null) {
+        <div
+          class="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised"
+          role="progressbar"
+          aria-label="Playback progress"
+          [attr.aria-valuenow]="progressRounded()"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div class="h-full rounded-full bg-accent" [style.width.%]="progress()"></div>
+        </div>
+      }
+    } @else {
+      <p class="truncate font-medium">{{ session().UserName || 'Unknown user' }}</p>
+      <p class="truncate text-sm text-text-muted">
+        {{ session().Client }} · {{ session().DeviceName }}
+      </p>
+    }
+    @if (controls() && session().SupportsRemoteControl) {
+      <div class="mt-2 flex gap-1.5">
+        <button
+          type="button"
+          class="rounded-lg border border-border px-2 py-1 text-xs text-text-muted transition-colors hover:text-text"
+          (click)="messageRequested.emit()"
+        >
+          Message
+        </button>
+        @if (session().NowPlayingItem) {
+          <button
+            type="button"
+            class="rounded-lg border border-border px-2 py-1 text-xs text-danger transition-colors hover:border-danger"
+            (click)="stopRequested.emit()"
+          >
+            Stop playback
+          </button>
+        }
+      </div>
+    }
+  </div>
+</article>

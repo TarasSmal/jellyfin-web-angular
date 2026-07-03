@@ -24,149 +24,9 @@ import { PromptService } from '@shared/ui/prompt-dialog';
 import { ToastService } from '@shared/ui/toast';
 
 @Component({
-  selector: 'app-admin-dashboard-page',
+  selector: 'jf-admin-dashboard-page',
   imports: [SessionCard],
-  template: `
-    <main class="space-y-10">
-      <header class="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold">Overview</h1>
-          @if (info.value(); as system) {
-            <p class="mt-1 text-sm text-text-muted">
-              {{ system.ServerName }} · Jellyfin {{ system.Version }}
-              @if (system.OperatingSystemDisplayName) {
-                · {{ system.OperatingSystemDisplayName }}
-              }
-            </p>
-            @if (system.HasPendingRestart) {
-              <p class="mt-2 inline-block rounded-lg border border-danger px-3 py-1.5 text-sm text-danger">
-                The server needs a restart to apply pending changes.
-              </p>
-            }
-          } @else if (info.isLoading()) {
-            <div class="mt-2 h-4 w-64 animate-pulse rounded bg-surface"></div>
-          }
-        </div>
-        <div class="flex gap-2">
-          <button
-            type="button"
-            class="rounded-lg border border-border px-3 py-1.5 text-sm text-text-muted transition-colors hover:text-text"
-            (click)="restart()"
-          >
-            Restart
-          </button>
-          <button
-            type="button"
-            class="rounded-lg border border-border px-3 py-1.5 text-sm text-danger transition-colors hover:border-danger"
-            (click)="shutdown()"
-          >
-            Shut down
-          </button>
-        </div>
-      </header>
-
-      <section>
-        <h2 class="mb-3 text-lg font-semibold">Now Playing</h2>
-        @if (nowPlaying().length > 0) {
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            @for (session of nowPlaying(); track session.Id) {
-              <app-session-card
-                [session]="session"
-                [posterUrl]="posterFor(session)"
-                [controls]="true"
-                (messageRequested)="message(session)"
-                (stopRequested)="stopPlayback(session)"
-              />
-            }
-          </div>
-        } @else if (sessions.isLoading()) {
-          <div class="h-24 animate-pulse rounded-xl bg-surface"></div>
-        } @else {
-          <p class="text-sm text-text-muted">Nothing is playing right now.</p>
-        }
-      </section>
-
-      <section>
-        <h2 class="mb-3 text-lg font-semibold">Active Devices</h2>
-        @if (idleSessions().length > 0) {
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            @for (session of idleSessions(); track session.Id) {
-              <app-session-card
-                [session]="session"
-                [controls]="true"
-                (messageRequested)="message(session)"
-              />
-            }
-          </div>
-        } @else if (!sessions.isLoading()) {
-          <p class="text-sm text-text-muted">No other devices connected.</p>
-        }
-      </section>
-
-      <section>
-        <h2 class="mb-3 text-lg font-semibold">Storage</h2>
-        @if (storageFolders(); as folders) {
-          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            @for (folder of folders; track folder.Path) {
-              <div class="rounded-xl border border-border bg-surface p-3">
-                <code class="block truncate text-xs text-text-muted">{{ folder.Path }}</code>
-                <p class="mt-1 text-sm">
-                  {{ freeLabel(folder) }}
-                </p>
-                <div
-                  class="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised"
-                  role="progressbar"
-                  [attr.aria-label]="folder.Path + ' disk usage'"
-                  [attr.aria-valuenow]="usedPercent(folder)"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                >
-                  <div
-                    class="h-full rounded-full"
-                    [class.bg-accent]="usedPercent(folder) < 90"
-                    [class.bg-danger]="usedPercent(folder) >= 90"
-                    [style.width.%]="usedPercent(folder)"
-                  ></div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else if (storage.isLoading()) {
-          <div class="h-20 animate-pulse rounded-xl bg-surface"></div>
-        }
-      </section>
-
-      <section>
-        <h2 class="mb-3 text-lg font-semibold">Running Tasks</h2>
-        @if (runningTasks().length > 0) {
-          <ul class="space-y-3">
-            @for (task of runningTasks(); track task.Id) {
-              <li class="rounded-xl border border-border bg-surface p-3">
-                <div class="flex items-baseline justify-between gap-3">
-                  <p class="truncate font-medium">{{ task.Name }}</p>
-                  <p class="shrink-0 text-sm text-text-muted">
-                    {{ taskProgressLabel(task) }}
-                  </p>
-                </div>
-                <div
-                  class="mt-2 h-1 overflow-hidden rounded-full bg-surface-raised"
-                  role="progressbar"
-                  [attr.aria-label]="task.Name + ' progress'"
-                  [attr.aria-valuenow]="taskProgress(task)"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                >
-                  <div class="h-full rounded-full bg-accent" [style.width.%]="taskProgress(task)"></div>
-                </div>
-              </li>
-            }
-          </ul>
-        } @else if (!tasks.isLoading()) {
-          <p class="text-sm text-text-muted">No scheduled tasks are running.</p>
-        }
-      </section>
-    </main>
-  `,
+  templateUrl: './admin-dashboard-page.html',
 })
 export class AdminDashboardPage {
   private readonly config = inject(ApiConfig);
@@ -177,7 +37,9 @@ export class AdminDashboardPage {
   private readonly toast = inject(ToastService);
 
   protected readonly info = httpResource<SystemInfo>(() => systemInfoRequest(this.config));
-  protected readonly storage = httpResource<SystemStorageDto>(() => systemStorageRequest(this.config));
+  protected readonly storage = httpResource<SystemStorageDto>(() =>
+    systemStorageRequest(this.config),
+  );
   protected readonly sessions = httpResource<SessionInfo[]>(() => sessionsRequest(this.config));
   protected readonly tasks = httpResource<TaskInfo[]>(() => scheduledTasksRequest(this.config));
 
@@ -294,7 +156,8 @@ export class AdminDashboardPage {
   protected async shutdown(): Promise<void> {
     const confirmed = await this.confirm.ask({
       title: 'Shut down the server?',
-      message: 'Jellyfin stops until you start it again from the host — this page cannot power it back on.',
+      message:
+        'Jellyfin stops until you start it again from the host — this page cannot power it back on.',
       confirmLabel: 'Shut down',
       danger: true,
     });

@@ -18,35 +18,13 @@ export interface ConfirmOptions {
 }
 
 @Component({
-  selector: 'app-confirm-dialog',
+  selector: 'jf-confirm-dialog',
   imports: [BrnDialogTitle, BrnDialogDescription],
   host: {
-    class: 'block w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl',
+    class:
+      'block w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl',
   },
-  template: `
-    <h2 brnDialogTitle class="text-lg font-semibold">{{ options.title }}</h2>
-    <p brnDialogDescription class="mt-2 text-sm text-text-muted">{{ options.message }}</p>
-    <div class="mt-6 flex justify-end gap-2">
-      <button
-        type="button"
-        class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
-        (click)="ref.close(false)"
-      >
-        Cancel
-      </button>
-      <button
-        type="button"
-        class="rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-        [class.bg-danger]="options.danger"
-        [class.hover:bg-danger/80]="options.danger"
-        [class.bg-accent]="!options.danger"
-        [class.hover:bg-accent-hover]="!options.danger"
-        (click)="ref.close(true)"
-      >
-        {{ options.confirmLabel ?? 'Confirm' }}
-      </button>
-    </div>
-  `,
+  templateUrl: './confirm-dialog.html',
 })
 export class ConfirmDialog {
   protected readonly options = injectBrnDialogContext<ConfirmOptions>();

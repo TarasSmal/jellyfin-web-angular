@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { ToastContainer } from '@shared/ui/toast';
 
 @Component({
-  selector: 'app-root',
+  selector: 'jf-root',
   imports: [RouterOutlet, ToastContainer],
   templateUrl: './app.html',
 })

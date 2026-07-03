@@ -1,10 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  MediaSourceInfo,
-  PlayMethod,
-  PlaybackApi,
-  PlaybackInfoOptions,
-} from '@shared/api';
+import { MediaSourceInfo, PlayMethod, PlaybackApi, PlaybackInfoOptions } from '@shared/api';
 
 export interface ResolvedStream {
   url: string;
@@ -42,8 +37,7 @@ export class PlayItem {
       return {
         url: transcodeUrl,
         method: 'Transcode',
-        isHls:
-          source.TranscodingSubProtocol === 'hls' || transcodeUrl.includes('.m3u8'),
+        isHls: source.TranscodingSubProtocol === 'hls' || transcodeUrl.includes('.m3u8'),
         mediaSource: source,
         playSessionId: info.PlaySessionId,
       };

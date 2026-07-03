@@ -18,6 +18,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     // Validate a persisted token before the first route renders, so guards
     // never let a stale session through.
-    provideAppInitializer(() => inject(AuthService).restoreSession().then(() => undefined)),
+    provideAppInitializer(() =>
+      inject(AuthService)
+        .restoreSession()
+        .then(() => undefined),
+    ),
   ],
 };

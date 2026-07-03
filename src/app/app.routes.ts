@@ -45,18 +45,15 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            loadComponent: () =>
-              import('@pages/admin-dashboard').then((m) => m.AdminDashboardPage),
+            loadComponent: () => import('@pages/admin-dashboard').then((m) => m.AdminDashboardPage),
           },
           {
             path: 'settings',
-            loadComponent: () =>
-              import('@pages/admin-settings').then((m) => m.AdminSettingsPage),
+            loadComponent: () => import('@pages/admin-settings').then((m) => m.AdminSettingsPage),
           },
           {
             path: 'activity',
-            loadComponent: () =>
-              import('@pages/admin-activity').then((m) => m.AdminActivityPage),
+            loadComponent: () => import('@pages/admin-activity').then((m) => m.AdminActivityPage),
           },
           {
             path: 'users',
@@ -68,8 +65,7 @@ export const routes: Routes = [
           },
           {
             path: 'libraries',
-            loadComponent: () =>
-              import('@pages/admin-libraries').then((m) => m.AdminLibrariesPage),
+            loadComponent: () => import('@pages/admin-libraries').then((m) => m.AdminLibrariesPage),
           },
           {
             path: 'tasks',
@@ -77,13 +73,11 @@ export const routes: Routes = [
           },
           {
             path: 'plugins',
-            loadComponent: () =>
-              import('@pages/admin-plugins').then((m) => m.AdminPluginsPage),
+            loadComponent: () => import('@pages/admin-plugins').then((m) => m.AdminPluginsPage),
           },
           {
             path: 'devices',
-            loadComponent: () =>
-              import('@pages/admin-devices').then((m) => m.AdminDevicesPage),
+            loadComponent: () => import('@pages/admin-devices').then((m) => m.AdminDevicesPage),
           },
           {
             path: 'keys',

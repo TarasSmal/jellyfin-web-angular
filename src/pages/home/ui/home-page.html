@@ -1,0 +1,32 @@
+<main class="pb-16">
+  @if (hero(); as heroItem) {
+    <jf-hero-billboard [item]="heroItem" />
+  } @else {
+    <div class="aspect-[16/8] max-h-[75dvh] min-h-96 w-full animate-pulse bg-surface"></div>
+  }
+
+  <div class="relative z-10 -mt-8 space-y-10">
+    <jf-media-rail
+      title="Continue Watching"
+      shape="thumb"
+      [items]="resume.value()?.Items"
+      [loading]="resume.isLoading()"
+    />
+    <jf-media-rail
+      title="Next Up"
+      shape="thumb"
+      [items]="nextUp.value()?.Items"
+      [loading]="nextUp.isLoading()"
+    />
+    <jf-media-rail
+      title="Latest Movies"
+      [items]="latestMovies.value()"
+      [loading]="latestMovies.isLoading()"
+    />
+    <jf-media-rail
+      title="Latest Shows"
+      [items]="latestShows.value()"
+      [loading]="latestShows.isLoading()"
+    />
+  </div>
+</main>

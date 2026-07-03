@@ -28,8 +28,6 @@ export class AuthApi {
   }
 
   logout(): Promise<void> {
-    return firstValueFrom(
-      this.http.post<void>(this.config.url('/Sessions/Logout'), null),
-    );
+    return firstValueFrom(this.http.post<void>(this.config.url('/Sessions/Logout'), null));
   }
 }

@@ -5,47 +5,9 @@ import { itemPosterUrl, itemThumbUrl } from '../lib/item-images';
 import { cardSubtitle, cardTitle } from '../lib/item-labels';
 
 @Component({
-  selector: 'app-item-card',
+  selector: 'jf-item-card',
   imports: [RouterLink],
-  template: `
-    <a
-      [routerLink]="['/item', linkId()]"
-      class="group block shrink-0 snap-start"
-      [class.w-full]="fluid()"
-      [class.w-36]="!fluid() && shape() === 'poster'"
-      [class.md:w-44]="!fluid() && shape() === 'poster'"
-      [class.w-64]="!fluid() && shape() === 'thumb'"
-      [class.md:w-72]="!fluid() && shape() === 'thumb'"
-    >
-      <div
-        class="relative overflow-hidden rounded-lg bg-surface ring-accent transition group-hover:ring-2"
-        [class.aspect-poster]="shape() === 'poster'"
-        [class.aspect-backdrop]="shape() === 'thumb'"
-      >
-        @if (imageUrl(); as url) {
-          <img
-            [src]="url"
-            [alt]="title()"
-            loading="lazy"
-            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
-        } @else {
-          <div class="flex h-full w-full items-center justify-center p-2 text-center text-sm text-text-faint">
-            {{ title() }}
-          </div>
-        }
-        @if (progress(); as pct) {
-          <div class="absolute inset-x-0 bottom-0 h-1 bg-black/50">
-            <div class="h-full bg-accent" [style.width.%]="pct"></div>
-          </div>
-        }
-      </div>
-      <p class="mt-2 truncate text-sm font-medium">{{ title() }}</p>
-      @if (subtitle(); as sub) {
-        <p class="truncate text-xs text-text-muted">{{ sub }}</p>
-      }
-    </a>
-  `,
+  templateUrl: './item-card.html',
 })
 export class ItemCard {
   private readonly config = inject(ApiConfig);

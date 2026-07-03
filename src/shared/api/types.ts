@@ -218,14 +218,7 @@ export interface TaskResult {
 }
 
 export type CollectionTypeOption =
-  | 'movies'
-  | 'tvshows'
-  | 'music'
-  | 'musicvideos'
-  | 'homevideos'
-  | 'boxsets'
-  | 'books'
-  | 'mixed';
+  'movies' | 'tvshows' | 'music' | 'musicvideos' | 'homevideos' | 'boxsets' | 'books' | 'mixed';
 
 /** A library as configured on the server ("virtual folder"). */
 export interface VirtualFolderInfo {

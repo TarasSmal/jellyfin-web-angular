@@ -85,196 +85,8 @@ const RETENTION_NUMBERS: ConfigNumber[] = [
 ];
 
 @Component({
-  selector: 'app-admin-settings-page',
-  template: `
-    <main>
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold">Settings</h1>
-          <p class="mt-1 text-sm text-text-muted">General server configuration.</p>
-        </div>
-        <button
-          type="button"
-          [disabled]="saving() || !draft()"
-          class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-          (click)="save()"
-        >
-          {{ saving() ? 'Saving…' : 'Save changes' }}
-        </button>
-      </div>
-
-      @if (draft(); as current) {
-        <div class="mt-6 grid gap-6 lg:grid-cols-2">
-          <section class="rounded-xl border border-border bg-surface p-4">
-            <h2 class="mb-3 text-lg font-semibold">General</h2>
-            <label class="block text-sm">
-              <span class="mb-1 block text-text-muted">Server name</span>
-              <input
-                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                [value]="current.ServerName ?? ''"
-                (change)="setString('ServerName', $event)"
-              />
-            </label>
-            <label class="mt-4 block text-sm">
-              <span class="mb-1 block text-text-muted">Display language</span>
-              <select
-                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                (change)="setString('UICulture', $event)"
-              >
-                @for (option of languages.value(); track option.Value) {
-                  <option [value]="option.Value" [selected]="option.Value === current.UICulture">
-                    {{ option.Name }}
-                  </option>
-                }
-              </select>
-            </label>
-            <div class="mt-4 space-y-2">
-              <label class="flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-raised/60">
-                <input
-                  type="checkbox"
-                  class="mt-1 size-4 accent-accent"
-                  [checked]="current.QuickConnectAvailable === true"
-                  (change)="setBool('QuickConnectAvailable', $event)"
-                />
-                <span class="min-w-0">
-                  <span class="block text-sm">Quick Connect</span>
-                  <span class="block text-xs text-text-faint">Sign in on TVs by entering a short code</span>
-                </span>
-              </label>
-              <label class="flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-raised/60">
-                <input
-                  type="checkbox"
-                  class="mt-1 size-4 accent-accent"
-                  [checked]="current.EnableFolderView === true"
-                  (change)="setBool('EnableFolderView', $event)"
-                />
-                <span class="min-w-0">
-                  <span class="block text-sm">Folder view</span>
-                  <span class="block text-xs text-text-faint">Expose plain media folders as a library</span>
-                </span>
-              </label>
-            </div>
-          </section>
-
-          <section class="rounded-xl border border-border bg-surface p-4">
-            <h2 class="mb-3 text-lg font-semibold">Metadata</h2>
-            <label class="block text-sm">
-              <span class="mb-1 block text-text-muted">Preferred metadata language</span>
-              <select
-                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                (change)="setString('PreferredMetadataLanguage', $event)"
-              >
-                @for (culture of metadataLanguages(); track culture.TwoLetterISOLanguageName) {
-                  <option
-                    [value]="culture.TwoLetterISOLanguageName"
-                    [selected]="culture.TwoLetterISOLanguageName === current.PreferredMetadataLanguage"
-                  >
-                    {{ culture.DisplayName }}
-                  </option>
-                }
-              </select>
-            </label>
-            <label class="mt-4 block text-sm">
-              <span class="mb-1 block text-text-muted">Country</span>
-              <select
-                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                (change)="setString('MetadataCountryCode', $event)"
-              >
-                @for (country of countries.value(); track country.TwoLetterISORegionName) {
-                  <option
-                    [value]="country.TwoLetterISORegionName"
-                    [selected]="country.TwoLetterISORegionName === current.MetadataCountryCode"
-                  >
-                    {{ country.DisplayName }}
-                  </option>
-                }
-              </select>
-            </label>
-          </section>
-
-          <section class="rounded-xl border border-border bg-surface p-4">
-            <h2 class="mb-3 text-lg font-semibold">Playback</h2>
-            <div class="space-y-4">
-              @for (field of resumeNumbers; track field.key) {
-                <label class="block text-sm">
-                  <span class="mb-1 block text-text-muted">{{ field.label }}</span>
-                  <input
-                    type="number"
-                    [min]="field.min"
-                    [max]="field.max"
-                    class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                    [value]="numberValue(field.key)"
-                    (change)="setNumber(field.key, field, $event)"
-                  />
-                  @if (field.hint) {
-                    <span class="mt-1 block text-xs text-text-faint">{{ field.hint }}</span>
-                  }
-                </label>
-              }
-              <label class="block text-sm">
-                <span class="mb-1 block text-text-muted">Remote stream bitrate limit (Mbps, 0 = unlimited)</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="1000"
-                  step="0.1"
-                  class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                  [value]="bitrateMbps()"
-                  (change)="setBitrate($event)"
-                />
-                <span class="mt-1 block text-xs text-text-faint">Applies to connections from outside the local network</span>
-              </label>
-            </div>
-          </section>
-
-          <section class="rounded-xl border border-border bg-surface p-4">
-            <h2 class="mb-3 text-lg font-semibold">Display & retention</h2>
-            <div class="space-y-2">
-              @for (toggle of displayToggles; track toggle.key) {
-                <label class="flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-raised/60">
-                  <input
-                    type="checkbox"
-                    class="mt-1 size-4 accent-accent"
-                    [checked]="boolValue(toggle.key)"
-                    (change)="setBool(toggle.key, $event)"
-                  />
-                  <span class="min-w-0">
-                    <span class="block text-sm">{{ toggle.label }}</span>
-                    @if (toggle.hint) {
-                      <span class="block text-xs text-text-faint">{{ toggle.hint }}</span>
-                    }
-                  </span>
-                </label>
-              }
-            </div>
-            <div class="mt-4 space-y-4">
-              @for (field of retentionNumbers; track field.key) {
-                <label class="block text-sm">
-                  <span class="mb-1 block text-text-muted">{{ field.label }}</span>
-                  <input
-                    type="number"
-                    [min]="field.min"
-                    [max]="field.max"
-                    class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                    [value]="numberValue(field.key)"
-                    (change)="setNumber(field.key, field, $event)"
-                  />
-                </label>
-              }
-            </div>
-          </section>
-        </div>
-      } @else if (serverConfig.isLoading()) {
-        <div class="mt-6 grid gap-6 lg:grid-cols-2">
-          @for (card of skeletonCards; track card) {
-            <div class="h-64 animate-pulse rounded-xl bg-surface"></div>
-          }
-        </div>
-      } @else if (serverConfig.error()) {
-        <p class="mt-6 text-sm text-danger">Couldn't load the server configuration.</p>
-      }
-    </main>
-  `,
+  selector: 'jf-admin-settings-page',
+  templateUrl: './admin-settings-page.html',
 })
 export class AdminSettingsPage {
   private readonly config = inject(ApiConfig);
@@ -336,14 +148,18 @@ export class AdminSettingsPage {
 
   protected setNumber(key: string, bounds: { min: number; max: number }, event: Event): void {
     const raw = Number((event.target as HTMLInputElement).value);
-    const value = Math.min(bounds.max, Math.max(bounds.min, Number.isFinite(raw) ? raw : bounds.min));
+    const value = Math.min(
+      bounds.max,
+      Math.max(bounds.min, Number.isFinite(raw) ? raw : bounds.min),
+    );
     this.draft.update((current) => current && { ...current, [key]: value });
   }
 
   protected setBitrate(event: Event): void {
     const mbps = Math.max(0, Number((event.target as HTMLInputElement).value) || 0);
     this.draft.update(
-      (current) => current && { ...current, RemoteClientBitrateLimit: Math.round(mbps * 1_000_000) },
+      (current) =>
+        current && { ...current, RemoteClientBitrateLimit: Math.round(mbps * 1_000_000) },
     );
   }
 

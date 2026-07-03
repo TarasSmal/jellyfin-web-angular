@@ -90,10 +90,7 @@ export class JellyfinSocket {
       this.ws = null;
       // Token may have been cleared while the close was in flight.
       if (this.config.isAuthenticated()) {
-        this.reconnectTimer = setTimeout(
-          () => this.connect(serverUrl, token),
-          RECONNECT_DELAY_MS,
-        );
+        this.reconnectTimer = setTimeout(() => this.connect(serverUrl, token), RECONNECT_DELAY_MS);
       }
     };
   }
@@ -119,14 +116,15 @@ export class JellyfinSocket {
   private scheduleKeepAlive(timeoutSeconds: number): void {
     if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
     this.send('KeepAlive');
-    this.keepAliveTimer = setInterval(
-      () => this.send('KeepAlive'),
-      (timeoutSeconds * 1000) / 2,
-    );
+    this.keepAliveTimer = setInterval(() => this.send('KeepAlive'), (timeoutSeconds * 1000) / 2);
   }
 
   private send(type: string, data?: string): void {
     if (this.ws?.readyState !== WebSocket.OPEN) return;
-    this.ws.send(JSON.stringify(data === undefined ? { MessageType: type } : { MessageType: type, Data: data }));
+    this.ws.send(
+      JSON.stringify(
+        data === undefined ? { MessageType: type } : { MessageType: type, Data: data },
+      ),
+    );
   }
 }

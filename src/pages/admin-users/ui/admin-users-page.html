@@ -1,0 +1,167 @@
+<main>
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold">Users</h1>
+      <p class="mt-1 text-sm text-text-muted">Accounts on this server.</p>
+    </div>
+
+    <brn-dialog #createDialog="brnDialog">
+      <button
+        brnDialogTrigger
+        class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+      >
+        New user
+      </button>
+      <brn-dialog-overlay class="bg-black/60" />
+      <div
+        *brnDialogContent
+        class="w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl"
+      >
+        <h2 brnDialogTitle class="text-lg font-semibold">New user</h2>
+        <form class="mt-4 space-y-4" (submit)="create($event, createDialog)">
+          <label class="block text-sm">
+            <span class="mb-1 block text-text-muted">Username</span>
+            <input
+              [formField]="userForm.name"
+              autocomplete="off"
+              class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+            />
+            @if (userForm.name().touched() && !userForm.name().valid()) {
+              <span class="mt-1 block text-xs text-danger">Username is required.</span>
+            }
+          </label>
+          <label class="block text-sm">
+            <span class="mb-1 block text-text-muted">Password</span>
+            <input
+              type="password"
+              [formField]="userForm.password"
+              autocomplete="new-password"
+              class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+            />
+          </label>
+          <div class="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              brnDialogClose
+              class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              [disabled]="!userForm().valid() || creating()"
+              class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+            >
+              {{ creating() ? 'Creating…' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </brn-dialog>
+  </div>
+
+  @if (sortedUsers(); as list) {
+    <div class="mt-6 overflow-x-auto rounded-xl border border-border">
+      <table class="w-full text-left text-sm">
+        <caption class="sr-only">
+          Server user accounts
+        </caption>
+        <thead
+          class="border-b border-border bg-surface text-xs uppercase tracking-wider text-text-muted"
+        >
+          <tr>
+            <th scope="col" class="px-4 py-3 font-semibold">User</th>
+            <th scope="col" class="px-4 py-3 font-semibold">Role</th>
+            <th scope="col" class="px-4 py-3 font-semibold">Status</th>
+            <th scope="col" class="px-4 py-3 font-semibold">Last active</th>
+            <th scope="col" class="px-4 py-3 text-right font-semibold">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of list; track user.Id) {
+            <tr class="border-b border-border/60 last:border-b-0">
+              <td class="whitespace-nowrap px-4 py-3 font-medium">
+                <a
+                  [routerLink]="['/admin/users', user.Id]"
+                  class="transition-colors hover:text-accent"
+                >
+                  {{ user.Name }}
+                </a>
+                @if (isSelf(user)) {
+                  <span class="ml-1 text-xs text-text-faint">(you)</span>
+                }
+              </td>
+              <td class="whitespace-nowrap px-4 py-3">
+                @if (user.Policy?.IsAdministrator) {
+                  <span class="rounded-full border border-accent px-2 py-0.5 text-xs text-accent"
+                    >Admin</span
+                  >
+                } @else {
+                  <span class="text-text-muted">User</span>
+                }
+              </td>
+              <td class="whitespace-nowrap px-4 py-3">
+                @if (user.Policy?.IsDisabled) {
+                  <span class="rounded-full border border-danger px-2 py-0.5 text-xs text-danger"
+                    >Disabled</span
+                  >
+                } @else {
+                  <span class="text-text-muted">Active</span>
+                }
+              </td>
+              <td class="whitespace-nowrap px-4 py-3 text-text-muted">
+                {{ (user.LastActivityDate | date: 'MMM d, HH:mm') ?? 'Never' }}
+              </td>
+              <td class="whitespace-nowrap px-4 py-3">
+                <div class="flex justify-end gap-1.5">
+                  <button
+                    type="button"
+                    class="rounded-lg border border-border px-2 py-1 text-xs text-text-muted transition-colors enabled:hover:text-text disabled:opacity-40"
+                    [disabled]="isSelf(user)"
+                    [title]="isSelf(user) ? 'You cannot change your own admin role' : ''"
+                    (click)="toggleAdmin(user)"
+                  >
+                    {{ user.Policy?.IsAdministrator ? 'Revoke admin' : 'Make admin' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-border px-2 py-1 text-xs text-text-muted transition-colors enabled:hover:text-text disabled:opacity-40"
+                    [disabled]="isSelf(user)"
+                    [title]="isSelf(user) ? 'You cannot disable yourself' : ''"
+                    (click)="toggleDisabled(user)"
+                  >
+                    {{ user.Policy?.IsDisabled ? 'Enable' : 'Disable' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-border px-2 py-1 text-xs text-text-muted transition-colors hover:text-text"
+                    (click)="setPassword(user)"
+                  >
+                    Set password
+                  </button>
+                  <button
+                    type="button"
+                    class="rounded-lg border border-border px-2 py-1 text-xs text-danger transition-colors enabled:hover:border-danger disabled:opacity-40"
+                    [disabled]="isSelf(user)"
+                    [title]="isSelf(user) ? 'You cannot delete yourself' : ''"
+                    (click)="remove(user)"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (users.isLoading()) {
+    <div class="mt-6 space-y-2">
+      @for (row of skeletonRows; track row) {
+        <div class="h-12 animate-pulse rounded-lg bg-surface"></div>
+      }
+    </div>
+  } @else if (users.error()) {
+    <p class="mt-6 text-sm text-danger">Couldn't load users.</p>
+  }
+</main>

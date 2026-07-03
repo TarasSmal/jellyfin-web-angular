@@ -23,148 +23,8 @@ const PROGRESS_INTERVAL_MS = 10_000;
 const CONTROLS_TIMEOUT_MS = 3_000;
 
 @Component({
-  selector: 'app-player-page',
-  template: `
-    <div
-      #container
-      class="fixed inset-0 z-50 bg-black"
-      [class.cursor-none]="!controlsVisible()"
-      (mousemove)="poke()"
-    >
-      <video
-        #video
-        class="h-full w-full"
-        autoplay
-        crossorigin="anonymous"
-        (click)="togglePlay()"
-        (play)="onPlay()"
-        (pause)="onPause()"
-        (ended)="onEnded()"
-        (timeupdate)="onTimeUpdate()"
-        (durationchange)="onTimeUpdate()"
-        (volumechange)="onVolumeChange()"
-      >
-        @for (sub of activeSubtitle(); track sub.url) {
-          <track kind="subtitles" [src]="sub.url" [label]="sub.label" default />
-        }
-      </video>
-
-      @if (loading()) {
-        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div class="h-12 w-12 animate-spin rounded-full border-2 border-border border-t-accent"></div>
-        </div>
-      }
-
-      @if (error()) {
-        <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
-          <p class="text-danger">Playback failed.</p>
-          <button type="button" class="rounded-lg border border-border px-4 py-2 text-sm" (click)="goBack()">
-            Go back
-          </button>
-        </div>
-      }
-
-      <!-- Top bar -->
-      <div
-        class="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 to-transparent px-6 py-4 transition-opacity"
-        [class.opacity-0]="!controlsVisible()"
-        [class.pointer-events-none]="!controlsVisible()"
-      >
-        <div class="flex items-center gap-4">
-          <button type="button" class="text-text-muted transition-colors hover:text-text" (click)="goBack()" title="Back">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 12H5m7-7-7 7 7 7" />
-            </svg>
-          </button>
-          <div>
-            <p class="font-semibold">{{ title() }}</p>
-            @if (subtitleLine(); as line) {
-              <p class="text-xs text-text-muted">{{ line }}</p>
-            }
-          </div>
-          <span class="ml-auto rounded border border-border px-1.5 py-0.5 text-xs text-text-faint">
-            {{ stream()?.method }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Bottom controls -->
-      <div
-        class="absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/90 to-transparent px-6 pt-10 pb-4 transition-opacity"
-        [class.opacity-0]="!controlsVisible()"
-        [class.pointer-events-none]="!controlsVisible()"
-      >
-        <input
-          type="range"
-          class="w-full accent-accent"
-          min="0"
-          [max]="duration()"
-          step="0.1"
-          [value]="currentTime()"
-          (input)="onSeek($event)"
-        />
-        <div class="flex items-center gap-4">
-          <button type="button" class="transition-colors hover:text-accent" (click)="togglePlay()" [title]="playing() ? 'Pause' : 'Play'">
-            @if (playing()) {
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z" /></svg>
-            } @else {
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            }
-          </button>
-
-          <span class="text-sm tabular-nums text-text-muted">
-            {{ clock(currentTime()) }} / {{ clock(duration()) }}
-          </span>
-
-          <span class="flex-1"></span>
-
-          @if (audioTracks().length > 1) {
-            <select
-              class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-              [value]="selectedAudio()"
-              (change)="onAudioChange($event)"
-              title="Audio track"
-            >
-              @for (track of audioTracks(); track track.Index) {
-                <option [value]="track.Index">{{ track.DisplayTitle ?? track.Language ?? 'Audio ' + track.Index }}</option>
-              }
-            </select>
-          }
-
-          @if (subtitleTracks().length) {
-            <select
-              class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-              [value]="selectedSubtitle() ?? ''"
-              (change)="onSubtitleChange($event)"
-              title="Subtitles"
-            >
-              <option value="">Subtitles off</option>
-              @for (track of subtitleTracks(); track track.Index) {
-                <option [value]="track.Index">{{ track.DisplayTitle ?? track.Language ?? 'Sub ' + track.Index }}</option>
-              }
-            </select>
-          }
-
-          <input
-            type="range"
-            class="w-24 accent-accent"
-            min="0"
-            max="1"
-            step="0.05"
-            [value]="volume()"
-            (input)="onVolume($event)"
-            title="Volume"
-          />
-
-          <button type="button" class="transition-colors hover:text-accent" (click)="toggleFullscreen()" title="Fullscreen">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  `,
+  selector: 'jf-player-page',
+  templateUrl: './player-page.html',
   host: {
     '(document:keydown)': 'onKey($event)',
   },
@@ -249,7 +109,11 @@ export class PlayerPage {
     this.destroyRef.onDestroy(() => this.teardown());
   }
 
-  private async start(item: BaseItemDto, audioStreamIndex?: number, resumeAt?: number): Promise<void> {
+  private async start(
+    item: BaseItemDto,
+    audioStreamIndex?: number,
+    resumeAt?: number,
+  ): Promise<void> {
     this.loading.set(true);
     this.error.set(false);
     try {
@@ -275,7 +139,9 @@ export class PlayerPage {
       }
 
       if (startAt > 1) {
-        video.addEventListener('loadedmetadata', () => (video.currentTime = startAt), { once: true });
+        video.addEventListener('loadedmetadata', () => (video.currentTime = startAt), {
+          once: true,
+        });
       }
 
       await this.playbackApi.reportStart(this.report());
@@ -380,7 +246,8 @@ export class PlayerPage {
   }
 
   protected onKey(event: KeyboardEvent): void {
-    if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement) return;
+    if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement)
+      return;
     const video = this.videoRef().nativeElement;
     switch (event.key) {
       case ' ':

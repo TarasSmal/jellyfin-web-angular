@@ -58,9 +58,19 @@ export interface PlaybackReport {
 const DEVICE_PROFILE = {
   MaxStreamingBitrate: 120_000_000,
   DirectPlayProfiles: [
-    { Container: 'mp4,m4v', Type: 'Video', VideoCodec: 'h264,hevc,av1,vp9', AudioCodec: 'aac,mp3,opus,flac' },
+    {
+      Container: 'mp4,m4v',
+      Type: 'Video',
+      VideoCodec: 'h264,hevc,av1,vp9',
+      AudioCodec: 'aac,mp3,opus,flac',
+    },
     { Container: 'webm', Type: 'Video', VideoCodec: 'vp8,vp9,av1', AudioCodec: 'vorbis,opus' },
-    { Container: 'mkv', Type: 'Video', VideoCodec: 'h264,hevc,av1,vp9', AudioCodec: 'aac,mp3,opus,flac' },
+    {
+      Container: 'mkv',
+      Type: 'Video',
+      VideoCodec: 'h264,hevc,av1,vp9',
+      AudioCodec: 'aac,mp3,opus,flac',
+    },
   ],
   TranscodingProfiles: [
     {
@@ -91,7 +101,10 @@ export class PlaybackApi {
   private readonly http = inject(HttpClient);
   private readonly config = inject(ApiConfig);
 
-  getPlaybackInfo(itemId: string, options: PlaybackInfoOptions = {}): Promise<PlaybackInfoResponse> {
+  getPlaybackInfo(
+    itemId: string,
+    options: PlaybackInfoOptions = {},
+  ): Promise<PlaybackInfoResponse> {
     return firstValueFrom(
       this.http.post<PlaybackInfoResponse>(
         this.config.url(`/Items/${itemId}/PlaybackInfo`),
@@ -142,10 +155,14 @@ export class PlaybackApi {
   }
 
   reportProgress(report: PlaybackReport): Promise<void> {
-    return firstValueFrom(this.http.post<void>(this.config.url('/Sessions/Playing/Progress'), report));
+    return firstValueFrom(
+      this.http.post<void>(this.config.url('/Sessions/Playing/Progress'), report),
+    );
   }
 
   reportStopped(report: PlaybackReport): Promise<void> {
-    return firstValueFrom(this.http.post<void>(this.config.url('/Sessions/Playing/Stopped'), report));
+    return firstValueFrom(
+      this.http.post<void>(this.config.url('/Sessions/Playing/Stopped'), report),
+    );
   }
 }
