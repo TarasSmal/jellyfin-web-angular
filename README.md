@@ -1,59 +1,73 @@
-# JellyfinWebAngular
+# jellyfin-web-angular
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.5.
+A modern web client for [Jellyfin](https://jellyfin.org/), built from scratch with **Angular 22** — zoneless, signal-based, and styled with **Tailwind CSS v4**. The long-term goal is a full, drop-in replacement for the stock `jellyfin-web` client.
 
-## Development server
+> **Status** — Phase 1 (movies & TV) is complete: authentication, home rails, library browsing, item detail, HLS playback, and search. Phase 2 (admin dashboard) is in progress.
 
-To start a local development server, run:
+## Highlights
 
-```bash
-ng serve
-```
+- **Zoneless, signal-first Angular 22** — no Zone.js; state is modeled with signals, derived state with `computed()`, and server reads with `httpResource`.
+- **Rail-based browsing** — a hero billboard plus horizontally scrolling rails (Continue Watching, Next Up, Latest) on the home page.
+- **Full HLS player** — direct play when the browser supports the codec, server-side transcode to HLS otherwise, with audio/subtitle track selection and playback progress reporting.
+- **Live admin dashboard** — sessions, system info, scheduled tasks, users, devices, API keys, plugins, and logs, kept current over a **WebSocket** connection instead of polling.
+- **Hand-rolled Jellyfin API client** — no `@jellyfin/sdk`; all wire format lives in one place (`shared/api`), keeping the rest of the app free of Jellyfin DTO shapes.
+- **Feature-Sliced Design** — a layered architecture (`app → pages → widgets → features → entities → shared`) enforced by lint, built to absorb large new feature areas without touching existing code.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Tech stack
 
-## Code scaffolding
+| Concern | Choice |
+| --- | --- |
+| Framework | Angular 22 (standalone, zoneless, signals) |
+| Styling | Tailwind CSS v4 (design tokens in `src/styles.css`) |
+| Overlays | Angular CDK + [spartan-ng](https://www.spartan.ng/) |
+| Playback | [hls.js](https://github.com/video-dev/hls.js) |
+| Architecture | [Feature-Sliced Design](https://feature-sliced.design/), enforced by [steiger](https://github.com/feature-sliced/steiger) |
+| Testing | Vitest |
+| Linting | ESLint (angular-eslint) + steiger FSD boundaries |
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Getting started
 
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+Requires Node.js and npm, plus a running Jellyfin server to connect to.
 
 ```bash
-ng test
+npm install
+npm start        # dev server at http://localhost:4200
 ```
 
-## Running end-to-end tests
+On first launch, the app prompts for your Jellyfin server URL, then your credentials — no configuration files or secrets are committed.
 
-For end-to-end (e2e) testing, run:
+### Scripts
 
-```bash
-ng e2e
+| Command | Description |
+| --- | --- |
+| `npm start` | Dev server with live reload |
+| `npm run build` | Production build to `dist/` |
+| `npm run lint` | ESLint + steiger FSD boundary checks (both must pass) |
+| `npm test` | Unit tests with Vitest |
+
+## Architecture
+
+The codebase follows **Feature-Sliced Design**: layers may only import downward, via path aliases (`@pages/*`, `@widgets/*`, `@features/*`, `@entities/*`, `@shared/*`) and each slice's `index.ts`.
+
+```
+app → pages → widgets → features → entities → shared
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+A few load-bearing rules:
 
-## Additional Resources
+- **All Jellyfin wire format** (paths, params, DTOs) lives in `shared/api` only — the rest of the app never imports Jellyfin types directly ([ADR 0002](docs/adr/0002-hand-rolled-api-client.md)).
+- **Server reads** use `httpResource()` with request builders that return `undefined` when unauthenticated; **mutations** go through API services.
+- **Live reads** stay current via WebSocket push rather than polling.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+See [`docs/adr/`](docs/adr/) for the architectural decisions and [`CONTEXT.md`](CONTEXT.md) for the domain glossary.
+
+## Roadmap
+
+- [x] **Phase 1** — Movies & TV: auth, home rails, library browse, item detail, HLS player, search
+- [ ] **Phase 2** — Admin dashboard (in progress)
+- [ ] Music
+- [ ] Live TV & DVR
+
+## License
+
+Released under the [MIT License](LICENSE). Not affiliated with the Jellyfin project.
