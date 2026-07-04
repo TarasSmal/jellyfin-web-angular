@@ -4,31 +4,19 @@
   [class.cursor-none]="!controlsVisible()"
   (mousemove)="poke()"
 >
-  <video
-    #video
-    class="h-full w-full"
-    autoplay
-    crossorigin="anonymous"
-    (click)="togglePlay()"
-    (play)="onPlay()"
-    (pause)="onPause()"
-    (ended)="onEnded()"
-    (timeupdate)="onTimeUpdate()"
-    (durationchange)="onTimeUpdate()"
-    (volumechange)="onVolumeChange()"
-  >
-    @for (sub of activeSubtitle(); track sub.url) {
+  <video #video class="h-full w-full" autoplay crossorigin="anonymous" (click)="togglePlay()">
+    @for (sub of session.activeSubtitle(); track sub.url) {
       <track kind="subtitles" [src]="sub.url" [label]="sub.label" default />
     }
   </video>
 
-  @if (loading()) {
+  @if (session.loading()) {
     <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
       <div class="h-12 w-12 animate-spin rounded-full border-2 border-border border-t-accent"></div>
     </div>
   }
 
-  @if (error()) {
+  @if (session.error()) {
     <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
       <p class="text-danger">Playback failed.</p>
       <button
@@ -50,7 +38,7 @@
     <div class="flex items-center gap-4">
       <button
         type="button"
-        class="text-text-muted transition-colors hover:text-text"
+        class="text-text-muted cursor-pointer transition-colors hover:text-text"
         (click)="goBack()"
         title="Back"
       >
@@ -72,7 +60,7 @@
         }
       </div>
       <span class="ml-auto rounded border border-border px-1.5 py-0.5 text-xs text-text-faint">
-        {{ stream()?.method }}
+        {{ session.method() }}
       </span>
     </div>
   </div>
@@ -87,9 +75,9 @@
       type="range"
       class="w-full accent-accent"
       min="0"
-      [max]="duration()"
+      [max]="session.duration()"
       step="0.1"
-      [value]="currentTime()"
+      [value]="session.position()"
       (input)="onSeek($event)"
     />
     <div class="flex items-center gap-4">
@@ -97,9 +85,9 @@
         type="button"
         class="transition-colors hover:text-accent"
         (click)="togglePlay()"
-        [title]="playing() ? 'Pause' : 'Play'"
+        [title]="session.playing() ? 'Pause' : 'Play'"
       >
-        @if (playing()) {
+        @if (session.playing()) {
           <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
           </svg>
@@ -111,38 +99,34 @@
       </button>
 
       <span class="text-sm tabular-nums text-text-muted">
-        {{ clock(currentTime()) }} / {{ clock(duration()) }}
+        {{ clock(session.position()) }} / {{ clock(session.duration()) }}
       </span>
 
       <span class="flex-1"></span>
 
-      @if (audioTracks().length > 1) {
+      @if (session.audioTracks().length > 1) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-          [value]="selectedAudio()"
+          [value]="session.selectedAudio()"
           (change)="onAudioChange($event)"
           title="Audio track"
         >
-          @for (track of audioTracks(); track track.Index) {
-            <option [value]="track.Index">
-              {{ track.DisplayTitle ?? track.Language ?? 'Audio ' + track.Index }}
-            </option>
+          @for (track of session.audioTracks(); track track.index) {
+            <option [value]="track.index">{{ track.label }}</option>
           }
         </select>
       }
 
-      @if (subtitleTracks().length) {
+      @if (session.subtitleTracks().length) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-          [value]="selectedSubtitle() ?? ''"
+          [value]="session.selectedSubtitle() ?? ''"
           (change)="onSubtitleChange($event)"
           title="Subtitles"
         >
           <option value="">Subtitles off</option>
-          @for (track of subtitleTracks(); track track.Index) {
-            <option [value]="track.Index">
-              {{ track.DisplayTitle ?? track.Language ?? 'Sub ' + track.Index }}
-            </option>
+          @for (track of session.subtitleTracks(); track track.index) {
+            <option [value]="track.index">{{ track.label }}</option>
           }
         </select>
       }
@@ -153,7 +137,7 @@
         min="0"
         max="1"
         step="0.05"
-        [value]="volume()"
+        [value]="session.volume()"
         (input)="onVolume($event)"
         title="Volume"
       />

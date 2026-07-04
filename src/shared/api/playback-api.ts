@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ApiConfig } from './api-config';
 import { getDeviceId } from '../lib/device-id';
+import { secondsToTicks } from '../lib/ticks';
 
 export interface MediaStreamDto {
   Index: number;
@@ -39,15 +40,31 @@ export interface PlaybackInfoResponse {
 
 export type PlayMethod = 'DirectPlay' | 'DirectStream' | 'Transcode';
 
-export interface PlaybackReport {
+/**
+ * A progress sample for one Play Session, in domain units: position in
+ * seconds, camelCase fields. The PascalCase wire report, ticks conversion,
+ * and endpoint paths stay private to this layer (ADR 0002).
+ */
+export interface SessionProgress {
+  itemId: string;
+  mediaSourceId: string;
+  playSessionId: string;
+  positionSeconds: number;
+  paused: boolean;
+  playMethod: PlayMethod;
+  audioStreamIndex?: number;
+}
+
+/** PascalCase playback-report wire DTO. Private — never leaves this layer. */
+interface PlaybackReport {
   ItemId: string;
   MediaSourceId: string;
   PlaySessionId: string;
   PositionTicks: number;
-  IsPaused?: boolean;
-  PlayMethod?: PlayMethod;
+  IsPaused: boolean;
+  PlayMethod: PlayMethod;
   AudioStreamIndex?: number;
-  CanSeek?: boolean;
+  CanSeek: boolean;
 }
 
 /**
@@ -150,19 +167,40 @@ export class PlaybackApi {
     )}?api_key=${this.config.accessToken() ?? ''}`;
   }
 
-  reportStart(report: PlaybackReport): Promise<void> {
-    return firstValueFrom(this.http.post<void>(this.config.url('/Sessions/Playing'), report));
+  reportStart(progress: SessionProgress): Promise<void> {
+    return this.report('/Sessions/Playing', progress);
   }
 
-  reportProgress(report: PlaybackReport): Promise<void> {
-    return firstValueFrom(
-      this.http.post<void>(this.config.url('/Sessions/Playing/Progress'), report),
-    );
+  reportProgress(progress: SessionProgress): Promise<void> {
+    return this.report('/Sessions/Playing/Progress', progress);
   }
 
-  reportStopped(report: PlaybackReport): Promise<void> {
-    return firstValueFrom(
-      this.http.post<void>(this.config.url('/Sessions/Playing/Stopped'), report),
-    );
+  reportStopped(progress: SessionProgress): Promise<void> {
+    return this.report('/Sessions/Playing/Stopped', progress);
   }
+
+  /**
+   * Reporting is telemetry: a failed request must never break playback, so
+   * HTTP failures are swallowed rather than propagated to the caller.
+   */
+  private async report(path: string, progress: SessionProgress): Promise<void> {
+    try {
+      await firstValueFrom(this.http.post<void>(this.config.url(path), toWire(progress)));
+    } catch {
+      // swallowed — see doc comment
+    }
+  }
+}
+
+function toWire(progress: SessionProgress): PlaybackReport {
+  return {
+    ItemId: progress.itemId,
+    MediaSourceId: progress.mediaSourceId,
+    PlaySessionId: progress.playSessionId,
+    PositionTicks: secondsToTicks(progress.positionSeconds),
+    IsPaused: progress.paused,
+    PlayMethod: progress.playMethod,
+    AudioStreamIndex: progress.audioStreamIndex,
+    CanSeek: true,
+  };
 }

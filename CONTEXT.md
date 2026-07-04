@@ -20,7 +20,9 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Transcode** — Playback where the server converts the file (usually to HLS) because the browser cannot play the original codec/container.
 
-**Play Session** — One continuous playback attempt of one item, identified by the server's PlaySessionId. Progress reports belong to a session; switching audio tracks ends one session and starts another.
+**Play Session** — One continuous playback attempt of one item, identified by the server's PlaySessionId. Progress reports belong to a session; switching audio tracks ends one session and starts another. Owned by the Play Session module, which binds to a video surface and hosts the whole lifecycle; a page or a future mini-player is merely its host.
+
+**Media Engine** — The mechanism that wires a resolved stream to a video surface: HLS.js when the surface can't play HLS natively, a native `src` assignment otherwise. A swappable port so the engine can change in one place and tests can attach without HLS.js.
 
 **View** — Jellyfin's name for what users see as a Library. The API says "views"; this project says Library everywhere outside `shared/api`.
 
