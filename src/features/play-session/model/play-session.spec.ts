@@ -336,6 +336,22 @@ describe('PlaySession', () => {
     expect(log.some((e) => e.startsWith('start:ps-2'))).toBe(true);
   });
 
+  it('resets ended when the session rotates to a new item', async () => {
+    const video = new StubVideo();
+    const session = await boot(video);
+
+    video.emit('ended');
+    expect(session.ended()).toBe(true);
+
+    itemId.set('movie-2');
+    TestBed.tick();
+    http.expectOne((r) => r.url === 'http://jf.test/Items/movie-2').flush(itemDto('movie-2'));
+    await settle();
+    await settle();
+
+    expect(session.ended()).toBe(false);
+  });
+
   it('exposes track labels with fallbacks resolved behind the interface', async () => {
     const video = new StubVideo();
     const session = await boot(video);

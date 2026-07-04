@@ -54,4 +54,6 @@ seek, volume, mute, select audio/subtitle, stop). The PlaySessionId and
   removes the obstacle (the overlay UI is out of scope).
 - **Accepted behavior changes** (not regressions): a failed report no longer
   error-screens playback; an audio switch briefly re-mounts the stream (the old
-  session is stopped first); and changing the hosted item id cleanly restarts.
+  session is stopped first); changing the hosted item id cleanly restarts; and
+  `ended` resets when the session rotates to a new item (it used to latch
+  forever), so a reused host observes each item's ending exactly once.

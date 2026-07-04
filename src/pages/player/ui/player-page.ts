@@ -15,6 +15,8 @@ import { createEpisodeNeighbors, createPlaySession } from '@features/play-sessio
 import { episodeCode } from '@entities/item';
 import { BaseItemDto } from '@shared/api';
 import { formatClock } from '@shared/lib/clock';
+import { createUpNextPolicy } from '../model/up-next-policy';
+import { UpNextCard } from './up-next-card';
 
 const CONTROLS_TIMEOUT_MS = 3_000;
 
@@ -26,6 +28,7 @@ const CONTROLS_TIMEOUT_MS = 3_000;
 @Component({
   selector: 'jf-player-page',
   templateUrl: './player-page.html',
+  imports: [UpNextCard],
   host: {
     '(document:keydown)': 'onKey($event)',
   },
@@ -47,6 +50,16 @@ export class PlayerPage {
   );
 
   protected readonly neighbors = createEpisodeNeighbors(() => this.session.item());
+
+  /** Ending policy: Up Next countdown for episodes, exit-as-before otherwise. */
+  protected readonly upNext = createUpNextPolicy({
+    ended: () => this.session.ended(),
+    item: () => this.session.item(),
+    next: () => this.neighbors.next(),
+    neighborsLoading: () => this.neighbors.loading(),
+    advance: (episode) => this.toNeighbor(episode),
+    exit: () => this.goBack(),
+  });
 
   protected readonly controlsVisible = signal(true);
   private controlsTimer: ReturnType<typeof setTimeout> | null = null;
@@ -72,9 +85,12 @@ export class PlayerPage {
   });
 
   constructor() {
-    // Ending policy lives with the host: navigate back today, close overlay tomorrow.
+    // Return focus to the player container when the Up Next card dismisses.
+    let hadCard = false;
     effect(() => {
-      if (this.session.ended()) this.goBack();
+      const hasCard = this.upNext.state() !== null;
+      if (hadCard && !hasCard) this.containerRef().nativeElement.focus();
+      hadCard = hasCard;
     });
     this.destroyRef.onDestroy(() => {
       if (this.controlsTimer) clearTimeout(this.controlsTimer);
@@ -84,6 +100,9 @@ export class PlayerPage {
   // --- gestures forwarded as commands ---
 
   protected togglePlay(): void {
+    // The session is dead while the Up Next card is up; a stray Space or video
+    // click must not restart the finished episode.
+    if (this.upNext.state()) return;
     this.session.togglePlay();
   }
 
@@ -130,7 +149,10 @@ export class PlayerPage {
     switch (event.key) {
       case ' ':
         event.preventDefault();
-        this.session.togglePlay();
+        this.togglePlay();
+        break;
+      case 'Escape':
+        this.upNext.cancel();
         break;
       case 'ArrowLeft':
         this.session.seek(Math.max(0, this.session.position() - 10));

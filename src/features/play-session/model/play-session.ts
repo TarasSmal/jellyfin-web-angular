@@ -234,6 +234,9 @@ class PlaySessionController implements PlaySession {
     const gen = ++this.gen;
     this.loading.set(true);
     this.error.set(false);
+    // A rotated session is a fresh playback attempt; ended must not latch
+    // across items or auto-advance would work exactly once (ADR 0004).
+    this.ended.set(false);
 
     let stream: ResolvedStream;
     try {

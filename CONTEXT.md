@@ -24,6 +24,8 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Media Engine** — The mechanism that wires a resolved stream to a video surface: HLS.js when the surface can't play HLS natively, a native `src` assignment otherwise. A swappable port so the engine can change in one place and tests can attach without HLS.js.
 
+**Up Next card** — The countdown card shown when an episode ends and an Episode Neighbor exists next: it advertises that episode and auto-advances after ten seconds unless the viewer plays it immediately or cancels. Movies and series finales never show it; their endings exit the player as before.
+
 **View** — Jellyfin's name for what users see as a Library. The API says "views"; this project says Library everywhere outside `shared/api`.
 
 **Episode Neighbors** — The previous and next episode of the one currently hosted, in series play order across season boundaries. Undefined at the series' first/last episode and for anything that isn't an episode. Powers in-player episode navigation; unrelated to Next Up, which spans *series*, not adjacent episodes.
