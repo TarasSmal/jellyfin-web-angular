@@ -81,6 +81,21 @@
       (input)="onSeek($event)"
     />
     <div class="flex items-center gap-4">
+      @if (isEpisode()) {
+        <button
+          type="button"
+          class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
+          [disabled]="!neighbors.previous()"
+          (click)="toNeighbor(neighbors.previous())"
+          [attr.aria-label]="previousLabel()"
+          [title]="previousLabel()"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 6h2v12H6zM18 6l-8.5 6 8.5 6z" />
+          </svg>
+        </button>
+      }
+
       <button
         type="button"
         class="transition-colors hover:text-accent"
@@ -97,6 +112,21 @@
           </svg>
         }
       </button>
+
+      @if (isEpisode()) {
+        <button
+          type="button"
+          class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
+          [disabled]="!neighbors.next()"
+          (click)="toNeighbor(neighbors.next())"
+          [attr.aria-label]="nextLabel()"
+          [title]="nextLabel()"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 6l8.5 6L6 18zM16 6h2v12h-2z" />
+          </svg>
+        </button>
+      }
 
       <span class="text-sm tabular-nums text-text-muted">
         {{ clock(session.position()) }} / {{ clock(session.duration()) }}

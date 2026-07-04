@@ -10,8 +10,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { Location } from '@angular/common';
-import { createPlaySession } from '@features/play-session';
+import { Router } from '@angular/router';
+import { createEpisodeNeighbors, createPlaySession } from '@features/play-session';
 import { episodeCode } from '@entities/item';
+import { BaseItemDto } from '@shared/api';
 import { formatClock } from '@shared/lib/clock';
 
 const CONTROLS_TIMEOUT_MS = 3_000;
@@ -30,6 +32,7 @@ const CONTROLS_TIMEOUT_MS = 3_000;
 })
 export class PlayerPage {
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   /** Route param via withComponentInputBinding. */
@@ -43,8 +46,18 @@ export class PlayerPage {
     () => this.videoRef()?.nativeElement ?? null,
   );
 
+  protected readonly neighbors = createEpisodeNeighbors(() => this.session.item());
+
   protected readonly controlsVisible = signal(true);
   private controlsTimer: ReturnType<typeof setTimeout> | null = null;
+
+  protected readonly isEpisode = computed(() => this.session.item()?.Type === 'Episode');
+  protected readonly previousLabel = computed(() =>
+    describeNeighbor('Previous episode', this.neighbors.previous()),
+  );
+  protected readonly nextLabel = computed(() =>
+    describeNeighbor('Next episode', this.neighbors.next()),
+  );
 
   protected readonly title = computed(() => {
     const it = this.session.item();
@@ -91,6 +104,15 @@ export class PlayerPage {
     this.session.selectSubtitle(raw === '' ? null : Number(raw));
   }
 
+  /**
+   * Episode-to-episode hops replace the history entry so browser Back always
+   * exits the player to the page it was opened from.
+   */
+  protected toNeighbor(target: BaseItemDto | undefined): void {
+    if (!target) return;
+    void this.router.navigate(['/player', target.Id], { replaceUrl: true });
+  }
+
   // --- host chrome ---
 
   protected toggleFullscreen(): void {
@@ -122,6 +144,12 @@ export class PlayerPage {
       case 'm':
         this.session.toggleMute();
         break;
+      case 'N':
+        if (event.shiftKey) this.toNeighbor(this.neighbors.next());
+        break;
+      case 'P':
+        if (event.shiftKey) this.toNeighbor(this.neighbors.previous());
+        break;
     }
     this.poke();
   }
@@ -141,4 +169,11 @@ export class PlayerPage {
   protected clock(seconds: number): string {
     return formatClock(seconds);
   }
+}
+
+/** "Next episode: S2:E6 · Title", or just the prefix while no target exists. */
+function describeNeighbor(prefix: string, target: BaseItemDto | undefined): string {
+  if (!target) return prefix;
+  const code = episodeCode(target);
+  return code ? `${prefix}: ${code} · ${target.Name}` : `${prefix}: ${target.Name}`;
 }

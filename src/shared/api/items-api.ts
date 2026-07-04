@@ -72,6 +72,28 @@ export function episodesRequest(config: ApiConfig, seriesId: string, seasonId: s
   };
 }
 
+/**
+ * Window of episodes around one episode in series play order, crossing season
+ * boundaries. The window contains the episode itself plus its neighbors.
+ */
+export function adjacentEpisodesRequest(
+  config: ApiConfig,
+  seriesId: string,
+  episodeId: string,
+): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return {
+    url: config.url(`/Shows/${seriesId}/Episodes`),
+    params: {
+      userId,
+      adjacentTo: episodeId,
+      fields: ITEM_FIELDS,
+      enableImageTypes: IMAGE_TYPES,
+    },
+  };
+}
+
 export interface ItemsQuery {
   parentId: string;
   /** Comma-separated Jellyfin kinds, e.g. 'Movie' or 'Series'. */
