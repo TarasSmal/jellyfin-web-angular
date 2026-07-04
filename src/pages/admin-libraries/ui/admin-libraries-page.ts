@@ -1,20 +1,15 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { httpResource } from '@angular/common/http';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter, throttleTime } from 'rxjs';
 import { FormField, form, required } from '@angular/forms/signals';
 import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
 import {
-  ApiConfig,
   CollectionTypeOption,
-  JellyfinSocket,
   LibraryAdminApi,
   VirtualFolderInfo,
+  liveResource,
   virtualFoldersRequest,
 } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
-import { ToastService } from '@shared/ui/toast';
 
 const COLLECTION_TYPES: { value: CollectionTypeOption; label: string }[] = [
   { value: 'movies', label: 'Movies' },
@@ -33,15 +28,14 @@ const COLLECTION_TYPES: { value: CollectionTypeOption; label: string }[] = [
   templateUrl: './admin-libraries-page.html',
 })
 export class AdminLibrariesPage {
-  private readonly config = inject(ApiConfig);
   private readonly api = inject(LibraryAdminApi);
   private readonly confirm = inject(ConfirmService);
   private readonly prompt = inject(PromptService);
-  private readonly toast = inject(ToastService);
 
-  protected readonly libraries = httpResource<VirtualFolderInfo[]>(() =>
-    virtualFoldersRequest(this.config),
-  );
+  // Stays current with scan progress; the module throttles the event burst.
+  protected readonly libraries = liveResource<VirtualFolderInfo[]>(virtualFoldersRequest, {
+    staleOn: 'library',
+  });
   protected readonly sortedLibraries = computed(() =>
     this.libraries
       .value()
@@ -62,18 +56,6 @@ export class AdminLibrariesPage {
     required(library.name);
   });
 
-  constructor() {
-    // Scan progress arrives as pushed RefreshProgress/LibraryChanged events;
-    // throttle because RefreshProgress fires many times per second mid-scan.
-    inject(JellyfinSocket)
-      .messages$.pipe(
-        filter((m) => m.MessageType === 'RefreshProgress' || m.MessageType === 'LibraryChanged'),
-        throttleTime(2_000, undefined, { leading: true, trailing: true }),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => this.libraries.reload());
-  }
-
   protected typeLabel(type: CollectionTypeOption | undefined): string {
     return COLLECTION_TYPES.find((t) => t.value === type)?.label ?? 'Mixed Content';
   }
@@ -83,17 +65,16 @@ export class AdminLibrariesPage {
     if (!this.libraryForm().valid() || this.creating()) return;
     this.creating.set(true);
     const { name, type, path } = this.newLibrary();
-    try {
-      await this.api.createLibrary(name.trim(), type, path.trim() ? [path.trim()] : []);
-      this.toast.show(`Created library “${name.trim()}”`, 'info');
+    const ok = await this.libraries.mutate(
+      () => this.api.createLibrary(name.trim(), type, path.trim() ? [path.trim()] : []),
+      `Created library “${name.trim()}”`,
+      `Couldn't create “${name.trim()}” — the server rejected it`,
+    );
+    if (ok) {
       dialog.close();
       this.newLibrary.set({ name: '', type: 'movies', path: '' });
-      this.libraries.reload();
-    } catch {
-      this.toast.show(`Couldn't create “${name.trim()}” — the server rejected it`);
-    } finally {
-      this.creating.set(false);
     }
+    this.creating.set(false);
   }
 
   protected async remove(library: VirtualFolderInfo): Promise<void> {
@@ -105,7 +86,10 @@ export class AdminLibrariesPage {
       danger: true,
     });
     if (!confirmed) return;
-    await this.mutate(() => this.api.deleteLibrary(library.Name), `Deleted “${library.Name}”`);
+    await this.libraries.mutate(
+      () => this.api.deleteLibrary(library.Name),
+      `Deleted “${library.Name}”`,
+    );
   }
 
   protected async addPath(library: VirtualFolderInfo): Promise<void> {
@@ -116,7 +100,7 @@ export class AdminLibrariesPage {
       confirmLabel: 'Add folder',
     });
     if (path === null) return;
-    await this.mutate(
+    await this.libraries.mutate(
       () => this.api.addPath(library.Name, path.trim()),
       `Added ${path.trim()} — scan started`,
     );
@@ -130,37 +114,24 @@ export class AdminLibrariesPage {
       danger: true,
     });
     if (!confirmed) return;
-    await this.mutate(() => this.api.removePath(library.Name, path), `Removed ${path}`);
+    await this.libraries.mutate(() => this.api.removePath(library.Name, path), `Removed ${path}`);
   }
 
   protected async scan(library: VirtualFolderInfo): Promise<void> {
-    if (!library.ItemId) return;
-    try {
-      await this.api.scanLibrary(library.ItemId);
-      this.toast.show(`Scanning “${library.Name}”…`, 'info');
-    } catch {
-      this.toast.show(`Couldn't start the scan of “${library.Name}”`);
-    }
-    this.libraries.reload();
+    const itemId = library.ItemId;
+    if (!itemId) return;
+    await this.libraries.mutate(
+      () => this.api.scanLibrary(itemId),
+      `Scanning “${library.Name}”…`,
+      `Couldn't start the scan of “${library.Name}”`,
+    );
   }
 
   protected async scanAll(): Promise<void> {
-    try {
-      await this.api.scanAllLibraries();
-      this.toast.show('Scanning all libraries…', 'info');
-    } catch {
-      this.toast.show("Couldn't start the library scan");
-    }
-    this.libraries.reload();
-  }
-
-  private async mutate(action: () => Promise<void>, successMessage: string): Promise<void> {
-    try {
-      await action();
-      this.toast.show(successMessage, 'info');
-    } catch {
-      this.toast.show('The server rejected the change');
-    }
-    this.libraries.reload();
+    await this.libraries.mutate(
+      () => this.api.scanAllLibraries(),
+      'Scanning all libraries…',
+      "Couldn't start the library scan",
+    );
   }
 }

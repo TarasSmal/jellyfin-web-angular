@@ -1,18 +1,16 @@
-import { Component, DestroyRef, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { httpResource } from '@angular/common/http';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ApiConfig,
   FolderStorageDto,
-  JellyfinSocket,
   SessionInfo,
   SessionsApi,
   SystemApi,
   SystemInfo,
   SystemStorageDto,
   TaskInfo,
-  scheduledTasksRequest,
-  sessionsRequest,
+  injectMutation,
+  liveResource,
   systemInfoRequest,
   systemStorageRequest,
 } from '@shared/api';
@@ -21,7 +19,6 @@ import { itemPosterUrl } from '@entities/item';
 import { formatBytes } from '@shared/lib/bytes';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
-import { ToastService } from '@shared/ui/toast';
 
 @Component({
   selector: 'jf-admin-dashboard-page',
@@ -34,30 +31,16 @@ export class AdminDashboardPage {
   private readonly sessionsApi = inject(SessionsApi);
   private readonly confirm = inject(ConfirmService);
   private readonly prompt = inject(PromptService);
-  private readonly toast = inject(ToastService);
 
   protected readonly info = httpResource<SystemInfo>(() => systemInfoRequest(this.config));
   protected readonly storage = httpResource<SystemStorageDto>(() =>
     systemStorageRequest(this.config),
   );
-  protected readonly sessions = httpResource<SessionInfo[]>(() => sessionsRequest(this.config));
-  protected readonly tasks = httpResource<TaskInfo[]>(() => scheduledTasksRequest(this.config));
+  protected readonly sessions = liveResource('sessions');
+  protected readonly tasks = liveResource('tasks');
 
-  constructor() {
-    // Live updates: the socket pushes full session/task snapshots into the
-    // resources; the initial HTTP fetch covers the gap before the first push.
-    const socket = inject(JellyfinSocket);
-    socket.start('Sessions');
-    socket.start('ScheduledTasksInfo');
-    socket.messages$.pipe(takeUntilDestroyed()).subscribe((message) => {
-      if (message.MessageType === 'Sessions') this.sessions.set(message.Data as SessionInfo[]);
-      if (message.MessageType === 'ScheduledTasksInfo') this.tasks.set(message.Data as TaskInfo[]);
-    });
-    inject(DestroyRef).onDestroy(() => {
-      socket.stop('Sessions');
-      socket.stop('ScheduledTasksInfo');
-    });
-  }
+  /** For actions with nothing to refetch (restart, shutdown, send-message). */
+  private readonly run = injectMutation();
 
   protected readonly nowPlaying = computed(() =>
     (this.sessions.value() ?? []).filter((s) => s.NowPlayingItem),
@@ -112,12 +95,11 @@ export class AdminDashboardPage {
       confirmLabel: 'Send',
     });
     if (text === null) return;
-    try {
-      await this.sessionsApi.sendMessage(session.Id, text);
-      this.toast.show('Message sent', 'info');
-    } catch {
-      this.toast.show("Couldn't deliver the message");
-    }
+    await this.run(
+      () => this.sessionsApi.sendMessage(session.Id, text),
+      'Message sent',
+      "Couldn't deliver the message",
+    );
   }
 
   protected async stopPlayback(session: SessionInfo): Promise<void> {
@@ -128,13 +110,11 @@ export class AdminDashboardPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.sessionsApi.stopPlayback(session.Id);
-      this.toast.show('Playback stopped', 'info');
-    } catch {
-      this.toast.show("Couldn't stop playback");
-    }
-    this.sessions.reload();
+    await this.sessions.mutate(
+      () => this.sessionsApi.stopPlayback(session.Id),
+      'Playback stopped',
+      "Couldn't stop playback",
+    );
   }
 
   protected async restart(): Promise<void> {
@@ -145,12 +125,11 @@ export class AdminDashboardPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.systemApi.restart();
-      this.toast.show('Server is restarting…', 'info');
-    } catch {
-      this.toast.show("Couldn't restart the server");
-    }
+    await this.run(
+      () => this.systemApi.restart(),
+      'Server is restarting…',
+      "Couldn't restart the server",
+    );
   }
 
   protected async shutdown(): Promise<void> {
@@ -162,12 +141,11 @@ export class AdminDashboardPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.systemApi.shutdown();
-      this.toast.show('Server is shutting down…', 'info');
-    } catch {
-      this.toast.show("Couldn't shut down the server");
-    }
+    await this.run(
+      () => this.systemApi.shutdown(),
+      'Server is shutting down…',
+      "Couldn't shut down the server",
+    );
   }
 
   protected taskProgress(task: TaskInfo): number {

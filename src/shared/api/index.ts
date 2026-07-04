@@ -17,5 +17,6 @@ export * from './api-keys-api';
 export * from './devices-api';
 export * from './logs-api';
 export * from './socket';
+export * from './live-resource';
 export * from './system-config-api';
 export * from './plugins-api';

@@ -23,3 +23,5 @@ Glossary of the language used in this project. Terms are added as they crystalli
 **Play Session** — One continuous playback attempt of one item, identified by the server's PlaySessionId. Progress reports belong to a session; switching audio tracks ends one session and starts another.
 
 **View** — Jellyfin's name for what users see as a Library. The API says "views"; this project says Library everywhere outside `shared/api`.
+
+**Live Resource** — A server read that stays current by socket push instead of polling. Two flavours: a *snapshot feed* replaces the whole value on every push (sessions, scheduled tasks); an *invalidation event* only marks the read stale so it refetches (library changes). Feeds and events carry domain names; the wire message names stay inside `shared/api`.

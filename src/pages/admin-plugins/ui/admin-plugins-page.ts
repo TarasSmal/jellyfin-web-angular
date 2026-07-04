@@ -7,11 +7,11 @@ import {
   PluginInfo,
   PluginStatus,
   PluginsApi,
+  liveResource,
   packagesRequest,
   pluginsRequest,
 } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
-import { ToastService } from '@shared/ui/toast';
 
 /** Plugin ids and package guids differ only in dash/case conventions. */
 function normalizeGuid(guid: string): string {
@@ -26,9 +26,8 @@ export class AdminPluginsPage {
   private readonly config = inject(ApiConfig);
   private readonly api = inject(PluginsApi);
   private readonly confirm = inject(ConfirmService);
-  private readonly toast = inject(ToastService);
 
-  protected readonly plugins = httpResource<PluginInfo[]>(() => pluginsRequest(this.config));
+  protected readonly plugins = liveResource<PluginInfo[]>(pluginsRequest);
   protected readonly packages = httpResource<PackageInfo[]>(() => packagesRequest(this.config));
 
   protected readonly filter = signal('');
@@ -86,13 +85,11 @@ export class AdminPluginsPage {
       });
       if (!confirmed) return;
     }
-    try {
-      await this.api.setEnabled(plugin.Id, plugin.Version, enable);
-      this.toast.show(`${plugin.Name} ${enable ? 'enabled' : 'disabled'}`, 'info');
-    } catch {
-      this.toast.show(`Couldn't ${enable ? 'enable' : 'disable'} ${plugin.Name}`);
-    }
-    this.plugins.reload();
+    await this.plugins.mutate(
+      () => this.api.setEnabled(plugin.Id, plugin.Version, enable),
+      `${plugin.Name} ${enable ? 'enabled' : 'disabled'}`,
+      `Couldn't ${enable ? 'enable' : 'disable'} ${plugin.Name}`,
+    );
   }
 
   protected async uninstall(plugin: PluginInfo): Promise<void> {
@@ -103,13 +100,11 @@ export class AdminPluginsPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.api.uninstall(plugin.Id, plugin.Version);
-      this.toast.show(`Uninstalled ${plugin.Name}`, 'info');
-    } catch {
-      this.toast.show(`Couldn't uninstall ${plugin.Name}`);
-    }
-    this.plugins.reload();
+    await this.plugins.mutate(
+      () => this.api.uninstall(plugin.Id, plugin.Version),
+      `Uninstalled ${plugin.Name}`,
+      `Couldn't uninstall ${plugin.Name}`,
+    );
   }
 
   protected async install(pkg: PackageInfo): Promise<void> {
@@ -120,12 +115,10 @@ export class AdminPluginsPage {
       confirmLabel: 'Install',
     });
     if (!confirmed) return;
-    try {
-      await this.api.install(pkg.name, pkg.guid, version?.version);
-      this.toast.show(`Installing ${pkg.name}…`, 'info');
-    } catch {
-      this.toast.show(`Couldn't start installing ${pkg.name}`);
-    }
-    this.plugins.reload();
+    await this.plugins.mutate(
+      () => this.api.install(pkg.name, pkg.guid, version?.version),
+      `Installing ${pkg.name}…`,
+      `Couldn't start installing ${pkg.name}`,
+    );
   }
 }

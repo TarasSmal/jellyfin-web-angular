@@ -16,7 +16,7 @@ Layers: `app → pages → widgets → features → entities → shared`. Import
 ## Hard rules
 
 - All Jellyfin wire format (paths, params, DTOs) lives in `shared/api` only (ADR 0002). No `@jellyfin/sdk`.
-- Server reads: `httpResource(() => someRequest(config))` with request builders from `shared/api` that return `undefined` when unauthenticated. Mutations: API services with `firstValueFrom`.
+- Server reads: `httpResource(() => someRequest(config))` with request builders from `shared/api` that return `undefined` when unauthenticated. Reads that should stay current via socket push, and any mutation with toast/refetch: `liveResource`/`injectMutation` (ADR 0003). Raw mutations: API services with `firstValueFrom`.
 - Styling: Tailwind tokens from `src/styles.css` (`bg`, `surface`, `accent`, …). No Angular Material; use Angular CDK/spartan-ng for overlay primitives.
 - `CONTEXT.md` is a glossary only — no implementation details. Decisions with real trade-offs get an ADR in `docs/adr/`.
 - Verify each feature against the real Jellyfin server in a browser before committing; the user enters his own credentials.

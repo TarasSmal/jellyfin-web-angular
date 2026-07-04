@@ -1,9 +1,6 @@
-import { Component, DestroyRef, computed, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiConfig, JellyfinSocket, TaskInfo, TasksApi, scheduledTasksRequest } from '@shared/api';
-import { ToastService } from '@shared/ui/toast';
+import { TaskInfo, TasksApi, liveResource } from '@shared/api';
 
 @Component({
   selector: 'jf-admin-tasks-page',
@@ -11,11 +8,9 @@ import { ToastService } from '@shared/ui/toast';
   templateUrl: './admin-tasks-page.html',
 })
 export class AdminTasksPage {
-  private readonly config = inject(ApiConfig);
   private readonly api = inject(TasksApi);
-  private readonly toast = inject(ToastService);
 
-  protected readonly tasks = httpResource<TaskInfo[]>(() => scheduledTasksRequest(this.config));
+  protected readonly tasks = liveResource('tasks');
 
   protected readonly groups = computed(() => {
     const all = this.tasks.value()?.filter((t) => !t.IsHidden);
@@ -35,15 +30,6 @@ export class AdminTasksPage {
 
   protected readonly skeletonRows = Array.from({ length: 8 }, (_, i) => i);
 
-  constructor() {
-    const socket = inject(JellyfinSocket);
-    socket.start('ScheduledTasksInfo');
-    socket.messages$.pipe(takeUntilDestroyed()).subscribe((message) => {
-      if (message.MessageType === 'ScheduledTasksInfo') this.tasks.set(message.Data as TaskInfo[]);
-    });
-    inject(DestroyRef).onDestroy(() => socket.stop('ScheduledTasksInfo'));
-  }
-
   protected progress(task: TaskInfo): number {
     return Math.round(task.CurrentProgressPercentage ?? 0);
   }
@@ -54,22 +40,18 @@ export class AdminTasksPage {
   }
 
   protected async run(task: TaskInfo): Promise<void> {
-    try {
-      await this.api.runTask(task.Id);
-      this.toast.show(`Started “${task.Name}”`, 'info');
-    } catch {
-      this.toast.show(`Couldn't start “${task.Name}”`);
-    }
-    this.tasks.reload();
+    await this.tasks.mutate(
+      () => this.api.runTask(task.Id),
+      `Started “${task.Name}”`,
+      `Couldn't start “${task.Name}”`,
+    );
   }
 
   protected async stop(task: TaskInfo): Promise<void> {
-    try {
-      await this.api.stopTask(task.Id);
-      this.toast.show(`Stopping “${task.Name}”…`, 'info');
-    } catch {
-      this.toast.show(`Couldn't stop “${task.Name}”`);
-    }
-    this.tasks.reload();
+    await this.tasks.mutate(
+      () => this.api.stopTask(task.Id),
+      `Stopping “${task.Name}”…`,
+      `Couldn't stop “${task.Name}”`,
+    );
   }
 }

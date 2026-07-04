@@ -8,11 +8,11 @@ import {
   UserDto,
   UserPolicy,
   VirtualFolderInfo,
+  injectMutation,
   parentalRatingsRequest,
   userRequest,
   virtualFoldersRequest,
 } from '@shared/api';
-import { ToastService } from '@shared/ui/toast';
 
 interface PolicyToggle {
   key: string;
@@ -77,7 +77,9 @@ export class AdminUserPage {
 
   private readonly config = inject(ApiConfig);
   private readonly api = inject(AdminUsersApi);
-  private readonly toast = inject(ToastService);
+  // Draft page: the linkedSignal draft resets when the user reloads, so a
+  // failed save must NOT refetch — reload only on success, via injectMutation.
+  private readonly run = injectMutation();
 
   protected readonly user = httpResource<UserDto>(() => userRequest(this.config, this.id()));
   protected readonly libraries = httpResource<VirtualFolderInfo[]>(() =>
@@ -154,14 +156,12 @@ export class AdminUserPage {
     const policy = this.draft();
     if (!policy || this.saving()) return;
     this.saving.set(true);
-    try {
-      await this.api.updatePolicy(this.id(), policy);
-      this.toast.show('Policy saved', 'info');
-      this.user.reload();
-    } catch {
-      this.toast.show('The server rejected the policy change');
-    } finally {
-      this.saving.set(false);
-    }
+    const ok = await this.run(
+      () => this.api.updatePolicy(this.id(), policy),
+      'Policy saved',
+      'The server rejected the policy change',
+    );
+    if (ok) this.user.reload();
+    this.saving.set(false);
   }
 }

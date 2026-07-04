@@ -9,10 +9,10 @@ import {
   SystemConfigApi,
   countriesRequest,
   culturesRequest,
+  injectMutation,
   localizationOptionsRequest,
   systemConfigRequest,
 } from '@shared/api';
-import { ToastService } from '@shared/ui/toast';
 
 interface ConfigToggle {
   key: string;
@@ -91,7 +91,9 @@ const RETENTION_NUMBERS: ConfigNumber[] = [
 export class AdminSettingsPage {
   private readonly config = inject(ApiConfig);
   private readonly api = inject(SystemConfigApi);
-  private readonly toast = inject(ToastService);
+  // Draft page: the linkedSignal draft resets when the config reloads, so a
+  // failed save must NOT refetch — reload only on success, via injectMutation.
+  private readonly run = injectMutation();
 
   protected readonly serverConfig = httpResource<ServerConfiguration>(() =>
     systemConfigRequest(this.config),
@@ -167,14 +169,12 @@ export class AdminSettingsPage {
     const configuration = this.draft();
     if (!configuration || this.saving()) return;
     this.saving.set(true);
-    try {
-      await this.api.update(configuration);
-      this.toast.show('Settings saved', 'info');
-      this.serverConfig.reload();
-    } catch {
-      this.toast.show('The server rejected the configuration change');
-    } finally {
-      this.saving.set(false);
-    }
+    const ok = await this.run(
+      () => this.api.update(configuration),
+      'Settings saved',
+      'The server rejected the configuration change',
+    );
+    if (ok) this.serverConfig.reload();
+    this.saving.set(false);
   }
 }

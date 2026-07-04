@@ -1,11 +1,9 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
-import { ApiConfig, DeviceInfoDto, DevicesApi, DevicesResult, devicesRequest } from '@shared/api';
+import { DeviceInfoDto, DevicesApi, DevicesResult, devicesRequest, liveResource } from '@shared/api';
 import { getDeviceId } from '@shared/lib/device-id';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
-import { ToastService } from '@shared/ui/toast';
 
 @Component({
   selector: 'jf-admin-devices-page',
@@ -13,13 +11,11 @@ import { ToastService } from '@shared/ui/toast';
   templateUrl: './admin-devices-page.html',
 })
 export class AdminDevicesPage {
-  private readonly config = inject(ApiConfig);
   private readonly api = inject(DevicesApi);
   private readonly confirm = inject(ConfirmService);
   private readonly prompt = inject(PromptService);
-  private readonly toast = inject(ToastService);
 
-  protected readonly devices = httpResource<DevicesResult>(() => devicesRequest(this.config));
+  protected readonly devices = liveResource<DevicesResult>(devicesRequest);
   protected readonly sortedDevices = computed(() =>
     this.devices
       .value()
@@ -39,13 +35,11 @@ export class AdminDevicesPage {
       confirmLabel: 'Rename',
     });
     if (name === null) return;
-    try {
-      await this.api.rename(device.Id, name.trim());
-      this.toast.show('Device renamed', 'info');
-    } catch {
-      this.toast.show("Couldn't rename the device");
-    }
-    this.devices.reload();
+    await this.devices.mutate(
+      () => this.api.rename(device.Id, name.trim()),
+      'Device renamed',
+      "Couldn't rename the device",
+    );
   }
 
   protected async remove(device: DeviceInfoDto): Promise<void> {
@@ -56,12 +50,10 @@ export class AdminDevicesPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.api.remove(device.Id);
-      this.toast.show('Device removed', 'info');
-    } catch {
-      this.toast.show("Couldn't remove the device");
-    }
-    this.devices.reload();
+    await this.devices.mutate(
+      () => this.api.remove(device.Id),
+      'Device removed',
+      "Couldn't remove the device",
+    );
   }
 }

@@ -1,7 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
-import { ApiConfig, ApiKeysApi, AuthenticationInfoResult, apiKeysRequest } from '@shared/api';
+import { ApiKeysApi, AuthenticationInfoResult, apiKeysRequest, liveResource } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
 import { ToastService } from '@shared/ui/toast';
@@ -12,15 +11,13 @@ import { ToastService } from '@shared/ui/toast';
   templateUrl: './admin-keys-page.html',
 })
 export class AdminKeysPage {
-  private readonly config = inject(ApiConfig);
   private readonly api = inject(ApiKeysApi);
   private readonly confirm = inject(ConfirmService);
   private readonly prompt = inject(PromptService);
+  /** Clipboard feedback only; server mutations toast through mutate(). */
   private readonly toast = inject(ToastService);
 
-  protected readonly keys = httpResource<AuthenticationInfoResult>(() =>
-    apiKeysRequest(this.config),
-  );
+  protected readonly keys = liveResource<AuthenticationInfoResult>(apiKeysRequest);
   protected readonly items = computed(() => this.keys.value()?.Items);
 
   protected async create(): Promise<void> {
@@ -31,13 +28,11 @@ export class AdminKeysPage {
       confirmLabel: 'Create key',
     });
     if (app === null) return;
-    try {
-      await this.api.create(app.trim());
-      this.toast.show(`Created a key for “${app.trim()}”`, 'info');
-    } catch {
-      this.toast.show("Couldn't create the key");
-    }
-    this.keys.reload();
+    await this.keys.mutate(
+      () => this.api.create(app.trim()),
+      `Created a key for “${app.trim()}”`,
+      "Couldn't create the key",
+    );
   }
 
   protected async revoke(token: string, appName?: string): Promise<void> {
@@ -48,13 +43,7 @@ export class AdminKeysPage {
       danger: true,
     });
     if (!confirmed) return;
-    try {
-      await this.api.revoke(token);
-      this.toast.show('Key revoked', 'info');
-    } catch {
-      this.toast.show("Couldn't revoke the key");
-    }
-    this.keys.reload();
+    await this.keys.mutate(() => this.api.revoke(token), 'Key revoked', "Couldn't revoke the key");
   }
 
   protected async copy(token: string): Promise<void> {

@@ -1,13 +1,11 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { httpResource } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { FormField, form, required } from '@angular/forms/signals';
 import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
-import { AdminUsersApi, ApiConfig, UserDto, usersRequest } from '@shared/api';
+import { AdminUsersApi, ApiConfig, UserDto, liveResource, usersRequest } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
-import { ToastService } from '@shared/ui/toast';
 
 @Component({
   selector: 'jf-admin-users-page',
@@ -19,9 +17,8 @@ export class AdminUsersPage {
   private readonly api = inject(AdminUsersApi);
   private readonly confirm = inject(ConfirmService);
   private readonly prompt = inject(PromptService);
-  private readonly toast = inject(ToastService);
 
-  protected readonly users = httpResource<UserDto[]>(() => usersRequest(this.config));
+  protected readonly users = liveResource<UserDto[]>(usersRequest);
   protected readonly sortedUsers = computed(() =>
     this.users
       .value()
@@ -46,17 +43,16 @@ export class AdminUsersPage {
     if (!this.userForm().valid() || this.creating()) return;
     this.creating.set(true);
     const { name, password } = this.newUser();
-    try {
-      await this.api.createUser(name.trim(), password);
-      this.toast.show(`Created user “${name.trim()}”`, 'info');
+    const ok = await this.users.mutate(
+      () => this.api.createUser(name.trim(), password),
+      `Created user “${name.trim()}”`,
+      `Couldn't create “${name.trim()}” — the server rejected it`,
+    );
+    if (ok) {
       dialog.close();
       this.newUser.set({ name: '', password: '' });
-      this.users.reload();
-    } catch {
-      this.toast.show(`Couldn't create “${name.trim()}” — the server rejected it`);
-    } finally {
-      this.creating.set(false);
     }
+    this.creating.set(false);
   }
 
   protected async toggleAdmin(user: UserDto): Promise<void> {
@@ -70,7 +66,7 @@ export class AdminUsersPage {
       danger: !makeAdmin,
     });
     if (!confirmed) return;
-    await this.mutate(
+    await this.users.mutate(
       () => this.api.updatePolicy(user.Id, { ...user.Policy, IsAdministrator: makeAdmin }),
       `${user.Name} is ${makeAdmin ? 'now' : 'no longer'} an administrator`,
     );
@@ -87,7 +83,7 @@ export class AdminUsersPage {
       });
       if (!confirmed) return;
     }
-    await this.mutate(
+    await this.users.mutate(
       () => this.api.updatePolicy(user.Id, { ...user.Policy, IsDisabled: disable }),
       `${user.Name} is ${disable ? 'disabled' : 'enabled'}`,
     );
@@ -102,7 +98,7 @@ export class AdminUsersPage {
       confirmLabel: 'Set password',
     });
     if (password === null) return;
-    await this.mutate(
+    await this.users.mutate(
       () => this.api.setPassword(user.Id, password),
       `Password for ${user.Name} was changed`,
     );
@@ -116,16 +112,6 @@ export class AdminUsersPage {
       danger: true,
     });
     if (!confirmed) return;
-    await this.mutate(() => this.api.deleteUser(user.Id), `Deleted ${user.Name}`);
-  }
-
-  private async mutate(action: () => Promise<void>, successMessage: string): Promise<void> {
-    try {
-      await action();
-      this.toast.show(successMessage, 'info');
-    } catch {
-      this.toast.show('The server rejected the change');
-    }
-    this.users.reload();
+    await this.users.mutate(() => this.api.deleteUser(user.Id), `Deleted ${user.Name}`);
   }
 }
