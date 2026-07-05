@@ -12,9 +12,11 @@ import {
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { createEpisodeNeighbors, createPlaySession } from '@features/play-session';
-import { episodeCode } from '@entities/item';
+import { cardSubtitle } from '@entities/item';
 import { BaseItemDto } from '@shared/api';
 import { formatClock } from '@shared/lib/clock';
+import { createArtworkWarmup } from '../model/artwork-warmup';
+import { nextEpisodeHint } from '../model/next-episode-hint';
 import { createUpNextPolicy } from '../model/up-next-policy';
 import { UpNextCard } from './up-next-card';
 
@@ -71,6 +73,7 @@ export class PlayerPage {
   protected readonly nextLabel = computed(() =>
     describeNeighbor('Next episode', this.neighbors.next()),
   );
+  protected readonly nextHint = computed(() => nextEpisodeHint(this.neighbors.next()));
 
   protected readonly title = computed(() => {
     const it = this.session.item();
@@ -80,11 +83,12 @@ export class PlayerPage {
   protected readonly subtitleLine = computed(() => {
     const it = this.session.item();
     if (!it || it.Type !== 'Episode') return null;
-    const code = episodeCode(it);
-    return code ? `${code} · ${it.Name}` : it.Name;
+    return cardSubtitle(it);
   });
 
   constructor() {
+    // The Up Next card's artwork is already cached by the time the card shows.
+    createArtworkWarmup(() => this.neighbors.next());
     // Return focus to the player container when the Up Next card dismisses.
     let hadCard = false;
     effect(() => {
@@ -215,6 +219,5 @@ export class PlayerPage {
 /** "Next episode: S2:E6 · Title", or just the prefix while no target exists. */
 function describeNeighbor(prefix: string, target: BaseItemDto | undefined): string {
   if (!target) return prefix;
-  const code = episodeCode(target);
-  return code ? `${prefix}: ${code} · ${target.Name}` : `${prefix}: ${target.Name}`;
+  return `${prefix}: ${cardSubtitle(target) ?? target.Name}`;
 }

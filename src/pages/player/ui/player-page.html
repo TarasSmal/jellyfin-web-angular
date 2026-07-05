@@ -145,6 +145,10 @@
 
       <span class="flex-1"></span>
 
+      @if (nextHint(); as hint) {
+        <span class="hidden max-w-80 truncate text-sm text-text-muted lg:block">{{ hint }}</span>
+      }
+
       @if (session.audioTracks().length > 1) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
