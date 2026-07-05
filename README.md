@@ -4,6 +4,13 @@ A modern web client for [Jellyfin](https://jellyfin.org/), built from scratch wi
 
 > **Status** — Phase 1 (movies & TV) is complete: authentication, home rails, library browsing, item detail, HLS playback, and search. Phase 2 (admin dashboard) is in progress.
 
+## Demo
+
+A live build is deployed at **<https://tarassmal.github.io/jellyfin-web-angular/>** — bring your own Jellyfin server. Two constraints apply:
+
+- The demo is served over HTTPS, so your server must also be reachable over **HTTPS** (plain `http://` URLs are blocked as mixed content).
+- Your server must allow **CORS** requests from `https://tarassmal.github.io`.
+
 ## Highlights
 
 - **Zoneless, signal-first Angular 22** — no Zone.js; state is modeled with signals, derived state with `computed()`, and server reads with `httpResource`.
