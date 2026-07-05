@@ -1,6 +1,6 @@
 <a
   [routerLink]="['/item', linkId()]"
-  class="group block shrink-0 snap-start"
+  class="group block shrink-0 snap-start focus-visible:outline-none"
   [class.w-full]="fluid()"
   [class.w-36]="!fluid() && shape() === 'poster'"
   [class.md:w-44]="!fluid() && shape() === 'poster'"
@@ -8,32 +8,54 @@
   [class.md:w-72]="!fluid() && shape() === 'thumb'"
 >
   <div
-    class="relative overflow-hidden rounded-lg bg-surface ring-accent transition group-hover:ring-2"
+    class="relative overflow-hidden rounded-lg bg-surface ring-accent transition"
     [class.aspect-poster]="shape() === 'poster'"
     [class.aspect-backdrop]="shape() === 'thumb'"
   >
     @if (imageUrl(); as url) {
       <img
         [src]="url"
-        [alt]="title()"
+        alt=""
         loading="lazy"
         class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
       />
+      @if (studioLogoUrl(); as logo) {
+        @if (!studioLogoFailed()) {
+          <img
+            [src]="logo"
+            alt=""
+            loading="lazy"
+            (error)="studioLogoFailed.set(true)"
+            class="absolute top-1.5 right-1.5 h-5 w-auto max-w-[40%] object-contain drop-shadow-md"
+          />
+        }
+      }
     } @else {
       <div
+        aria-hidden="true"
         class="flex h-full w-full items-center justify-center p-2 text-center text-sm text-text-faint"
       >
         {{ title() }}
       </div>
     }
+
+    <div
+      class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-bg/90 via-bg/40 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+    >
+      <div
+        class="translate-y-2 px-2.5 pb-3 transition-transform duration-200 group-hover:translate-y-0 group-focus-visible:translate-y-0 motion-reduce:translate-y-0 motion-reduce:transition-none"
+      >
+        <p class="truncate text-sm font-medium">{{ title() }}</p>
+        @if (meta(); as m) {
+          <p class="truncate text-xs text-text-muted">{{ m }}</p>
+        }
+      </div>
+    </div>
+
     @if (progress(); as pct) {
       <div class="absolute inset-x-0 bottom-0 h-1 bg-black/50">
         <div class="h-full bg-accent" [style.width.%]="pct"></div>
       </div>
     }
   </div>
-  <p class="mt-2 truncate text-sm font-medium">{{ title() }}</p>
-  @if (subtitle(); as sub) {
-    <p class="truncate text-xs text-text-muted">{{ sub }}</p>
-  }
 </a>

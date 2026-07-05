@@ -7,7 +7,7 @@ import { ApiConfig } from './api-config';
  * Wire format (paths, params) lives here and nowhere else — ADR 0002.
  */
 
-const ITEM_FIELDS = 'PrimaryImageAspectRatio,Overview';
+const ITEM_FIELDS = 'PrimaryImageAspectRatio,Overview,Studios,SeriesStudio';
 const IMAGE_TYPES = 'Primary,Backdrop,Thumb';
 
 type Req = HttpResourceRequest | undefined;

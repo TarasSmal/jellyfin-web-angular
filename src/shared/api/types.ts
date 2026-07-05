@@ -123,6 +123,12 @@ export interface PersonDto {
   PrimaryImageTag?: string;
 }
 
+/** Shared Id+Name shape used by studios and similar linked entities. */
+export interface NameGuidPair {
+  Id: string;
+  Name: string;
+}
+
 /** Embedded chapter metadata; present when the item is fetched with the Chapters field. */
 export interface ChapterInfo {
   StartPositionTicks: number;
@@ -140,15 +146,18 @@ export interface BaseItemDto {
   ProductionYear?: number;
   RunTimeTicks?: number;
   CommunityRating?: number;
+  CriticRating?: number;
   OfficialRating?: string;
   Overview?: string;
   Genres?: string[];
+  Studios?: NameGuidPair[];
   ImageTags?: Record<string, string>;
   BackdropImageTags?: string[];
   ImageBlurHashes?: Record<string, Record<string, string>>;
   PrimaryImageAspectRatio?: number;
   SeriesId?: string;
   SeriesName?: string;
+  SeriesStudio?: string;
   SeriesPrimaryImageTag?: string;
   ParentBackdropItemId?: string;
   ParentBackdropImageTags?: string[];

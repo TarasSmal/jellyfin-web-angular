@@ -53,6 +53,11 @@ export function personImageUrl(
   return imageUrl(config, person.Id, 'Primary', person.PrimaryImageTag, `fillHeight=${height}`);
 }
 
+/** Studio/network logo by name. By-name images have no tag, so no cache-busting. */
+export function studioImageUrl(config: ApiConfig, name: string, maxHeight = 96): string {
+  return `${config.url(`/Studios/${encodeURIComponent(name)}/Images/Primary`)}?maxHeight=${maxHeight}&quality=90`;
+}
+
 /** Wide card image for Continue Watching / Next Up: own thumb, else episode still, else backdrop. */
 export function itemThumbUrl(config: ApiConfig, item: BaseItemDto, width = 640): string | null {
   const thumbTag = item.ImageTags?.['Thumb'];

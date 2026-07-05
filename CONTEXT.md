@@ -34,4 +34,8 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Chapter Mark** — The visual tick on the seek bar at a chapter's start. Marks are guidance, not targets: seeking never snaps to them; hovering or scrubbing the track reveals the containing chapter's name.
 
+**Card Overlay** — The title/year/rating layer that appears over an item card's artwork on hover or keyboard focus. On touch devices cards are artwork-only; the overlay text still exists for assistive technology.
+
+**Studio Badge** — The small studio/network logo shown in an item card's top-right corner (episodes show their series' network). Absent when the server has no logo for that studio.
+
 **Live Resource** — A server read that stays current by socket push instead of polling. Two flavours: a *snapshot feed* replaces the whole value on every push (sessions, scheduled tasks); an *invalidation event* only marks the read stale so it refetches (library changes). Feeds and events carry domain names; the wire message names stay inside `shared/api`.

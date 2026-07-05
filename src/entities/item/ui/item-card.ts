@@ -1,8 +1,8 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiConfig, BaseItemDto } from '@shared/api';
-import { itemPosterUrl, itemThumbUrl } from '../lib/item-images';
-import { cardSubtitle, cardTitle } from '../lib/item-labels';
+import { itemPosterUrl, itemThumbUrl, studioImageUrl } from '../lib/item-images';
+import { cardMeta, cardTitle, studioName } from '../lib/item-labels';
 
 @Component({
   selector: 'jf-item-card',
@@ -18,7 +18,7 @@ export class ItemCard {
   readonly fluid = input(false);
 
   protected readonly title = computed(() => cardTitle(this.item()));
-  protected readonly subtitle = computed(() => cardSubtitle(this.item()));
+  protected readonly meta = computed(() => cardMeta(this.item()));
   protected readonly progress = computed(() => {
     const pct = this.item().UserData?.PlayedPercentage;
     return pct && pct > 0 && pct < 100 ? pct : null;
@@ -36,4 +36,15 @@ export class ItemCard {
       ? itemPosterUrl(this.config, this.item())
       : itemThumbUrl(this.config, this.item()),
   );
+
+  protected readonly studioLogoUrl = computed(() => {
+    const name = studioName(this.item());
+    return name ? studioImageUrl(this.config, name) : null;
+  });
+
+  /** Hides the badge when the server has no logo; resets when the item changes. */
+  protected readonly studioLogoFailed = linkedSignal({
+    source: this.studioLogoUrl,
+    computation: () => false,
+  });
 }
