@@ -10,7 +10,11 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Rail** — A horizontally scrolling row of item cards on the home page (e.g. "Continue Watching", "Latest Movies"). Peacock-style browsing is built from rails.
 
-**Hero Billboard** — The large featured-item banner at the top of the home page: backdrop image, title, and call-to-action.
+**Hero Billboard** — The large featured banner at the top of the home page: backdrop image, title, and call-to-action. It rotates through the Featured Items automatically, is pausable by the viewer, and stops rotating once the viewer navigates slides manually.
+
+**Featured Items** — The small set (up to five) of items the hero billboard showcases: drawn from the latest movies and shows, alternating between the two, requiring a backdrop image and preferring items with a title logo.
+
+**Rotator** — The generic one-slide-at-a-time cycling surface: crossfading slides, prev/next arrows, position dots, and a pause control. Distinct from a Rail, which shows many cards at once and scrolls; a Rotator shows one slide and cycles. The hero billboard is its first use.
 
 **Continue Watching** — Items the user has partially played, resumable from where they left off. Distinct from Next Up.
 
