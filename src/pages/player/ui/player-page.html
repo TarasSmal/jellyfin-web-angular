@@ -20,6 +20,7 @@
   @if (upNext.state(); as upNextState) {
     <jf-up-next-card
       [episode]="upNextState.episode"
+      [mode]="upNextState.mode"
       [secondsLeft]="upNextState.secondsLeft"
       (playNow)="upNext.playNow()"
       (cancelled)="upNext.cancel()"
@@ -96,7 +97,7 @@
           type="button"
           class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
           [disabled]="!neighbors.previous()"
-          (click)="toNeighbor(neighbors.previous())"
+          (click)="hopTo(neighbors.previous())"
           [attr.aria-label]="previousLabel()"
           [title]="previousLabel()"
         >
@@ -128,7 +129,7 @@
           type="button"
           class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
           [disabled]="!neighbors.next()"
-          (click)="toNeighbor(neighbors.next())"
+          (click)="hopTo(neighbors.next())"
           [attr.aria-label]="nextLabel()"
           [title]="nextLabel()"
         >

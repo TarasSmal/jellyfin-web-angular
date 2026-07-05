@@ -7,28 +7,50 @@
     <img [src]="url" alt="" class="aspect-video w-full object-cover" />
   }
   <div class="space-y-3 p-4">
-    <p class="text-xs font-semibold tracking-widest text-text-muted uppercase">
-      Up next
-      <span aria-hidden="true" class="float-right tabular-nums">{{ secondsLeft() }}</span>
-    </p>
-    <p id="up-next-heading" class="font-semibold">{{ line() }}</p>
-    <div class="flex gap-2">
-      <button
-        type="button"
-        class="flex-1 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-        (click)="playNow.emit()"
-      >
-        Play now
-      </button>
-      <button
-        #cancelButton
-        type="button"
-        class="flex-1 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface-raised"
-        (click)="cancelled.emit()"
-      >
-        Cancel
-      </button>
-    </div>
+    @if (mode() === 'confirm') {
+      <p id="up-next-heading" class="font-semibold">Are you still watching?</p>
+      <p class="text-sm text-text-muted">Up next: {{ line() }}</p>
+      <div class="flex gap-2">
+        <button
+          #focusTarget
+          type="button"
+          class="flex-1 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          (click)="playNow.emit()"
+        >
+          Keep watching
+        </button>
+        <button
+          type="button"
+          class="flex-1 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface-raised"
+          (click)="cancelled.emit()"
+        >
+          Exit
+        </button>
+      </div>
+    } @else {
+      <p class="text-xs font-semibold tracking-widest text-text-muted uppercase">
+        Up next
+        <span aria-hidden="true" class="float-right tabular-nums">{{ secondsLeft() }}</span>
+      </p>
+      <p id="up-next-heading" class="font-semibold">{{ line() }}</p>
+      <div class="flex gap-2">
+        <button
+          type="button"
+          class="flex-1 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          (click)="playNow.emit()"
+        >
+          Play now
+        </button>
+        <button
+          #focusTarget
+          type="button"
+          class="flex-1 rounded-lg border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-surface-raised"
+          (click)="cancelled.emit()"
+        >
+          Cancel
+        </button>
+      </div>
+    }
   </div>
   <p class="sr-only" aria-live="polite">{{ announcement() }}</p>
 </div>

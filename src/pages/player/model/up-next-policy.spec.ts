@@ -7,7 +7,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { BaseItemDto } from '@shared/api';
-import { UpNextPolicy, createUpNextPolicy } from './up-next-policy';
+import { UpNextOptions, UpNextPolicy, createUpNextPolicy } from './up-next-policy';
 
 function episode(id: string): BaseItemDto {
   return { Id: id, Name: `Episode ${id}`, Type: 'Episode' } as BaseItemDto;
@@ -40,17 +40,20 @@ describe('UpNextPolicy', () => {
     vi.useRealTimers();
   });
 
-  function create(): UpNextPolicy {
+  function create(options?: UpNextOptions): UpNextPolicy {
     if (!scope) throw new Error('scope destroyed');
     const policy = runInInjectionContext(scope, () =>
-      createUpNextPolicy({
-        ended: () => ended(),
-        item: () => item(),
-        next: () => next(),
-        neighborsLoading: () => neighborsLoading(),
-        advance,
-        exit,
-      }),
+      createUpNextPolicy(
+        {
+          ended: () => ended(),
+          item: () => item(),
+          next: () => next(),
+          neighborsLoading: () => neighborsLoading(),
+          advance,
+          exit,
+        },
+        options,
+      ),
     );
     TestBed.tick();
     return policy;
@@ -59,6 +62,20 @@ describe('UpNextPolicy', () => {
   /** Advance fake time and flush the effects the ticks scheduled. */
   function tick(ms: number): void {
     vi.advanceTimersByTime(ms);
+    TestBed.tick();
+  }
+
+  /**
+   * One hands-off cycle: the current episode ends, the countdown runs out,
+   * and the host rotates to the advertised episode.
+   */
+  function handsOffCycle(advancedTo: string, nextUp: string): void {
+    ended.set(true);
+    TestBed.tick();
+    tick(10_000); // countdown runs out → auto-advance
+    item.set(episode(advancedTo));
+    next.set(episode(nextUp));
+    ended.set(false); // rotated session
     TestBed.tick();
   }
 
@@ -190,6 +207,109 @@ describe('UpNextPolicy', () => {
     expect(policy.state()).toBeNull();
     tick(15_000);
     expect(advance).not.toHaveBeenCalled();
+  });
+
+  it('asks "still watching?" with no timer after three hands-off auto-advances', () => {
+    next.set(episode('ep-2'));
+    const policy = create();
+
+    handsOffCycle('ep-2', 'ep-3');
+    handsOffCycle('ep-3', 'ep-4');
+    handsOffCycle('ep-4', 'ep-5');
+    expect(advance).toHaveBeenCalledTimes(3);
+
+    // The fourth ending confirms instead of counting down.
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('confirm');
+    expect(policy.state()?.episode.Id).toBe('ep-5');
+
+    tick(60_000); // waits indefinitely — no countdown runs
+    expect(policy.state()?.mode).toBe('confirm');
+    expect(advance).toHaveBeenCalledTimes(3);
+    expect(exit).not.toHaveBeenCalled();
+  });
+
+  it('restores countdown behavior after Keep Watching, at a configurable threshold', () => {
+    next.set(episode('ep-2'));
+    const policy = create({ stillWatchingThreshold: 1 });
+
+    handsOffCycle('ep-2', 'ep-3');
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('confirm');
+
+    policy.playNow(); // Keep Watching
+    expect(advance).toHaveBeenCalledTimes(2);
+    expect(advance).toHaveBeenLastCalledWith(expect.objectContaining({ Id: 'ep-3' }));
+
+    // The counter reset: the next ending counts down again.
+    item.set(episode('ep-3'));
+    next.set(episode('ep-4'));
+    ended.set(false);
+    TestBed.tick();
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('countdown');
+    expect(policy.state()?.secondsLeft).toBe(10);
+  });
+
+  it('treats Play Now during a countdown as proof of life', () => {
+    next.set(episode('ep-2'));
+    const policy = create({ stillWatchingThreshold: 1 });
+
+    handsOffCycle('ep-2', 'ep-3'); // counter at the threshold
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('confirm');
+    policy.playNow();
+
+    // A countdown ending where the viewer presses Play Now before it fires…
+    item.set(episode('ep-3'));
+    next.set(episode('ep-4'));
+    ended.set(false);
+    TestBed.tick();
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('countdown');
+    tick(3_000);
+    policy.playNow();
+
+    // …keeps the following ending on countdown, not confirm.
+    item.set(episode('ep-4'));
+    next.set(episode('ep-5'));
+    ended.set(false);
+    TestBed.tick();
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('countdown');
+  });
+
+  it('never nags an active viewer: user activity resets the guard', () => {
+    next.set(episode('ep-2'));
+    const policy = create({ stillWatchingThreshold: 1 });
+
+    handsOffCycle('ep-2', 'ep-3'); // counter at the threshold
+    policy.noteUserActivity(); // a key press mid-episode
+
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('countdown');
+  });
+
+  it('exits from the confirmation without advancing', () => {
+    next.set(episode('ep-2'));
+    const policy = create({ stillWatchingThreshold: 1 });
+
+    handsOffCycle('ep-2', 'ep-3');
+    ended.set(true);
+    TestBed.tick();
+    expect(policy.state()?.mode).toBe('confirm');
+
+    policy.cancel(); // Exit
+    expect(exit).toHaveBeenCalledTimes(1);
+    expect(policy.state()).toBeNull();
+    expect(advance).toHaveBeenCalledTimes(1); // only the original auto-advance
   });
 
   it('tears the countdown timer down with the host', () => {

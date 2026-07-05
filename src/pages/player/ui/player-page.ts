@@ -98,8 +98,10 @@ export class PlayerPage {
   }
 
   // --- gestures forwarded as commands ---
+  // Every deliberate gesture is also proof of life for the still-watching guard.
 
   protected togglePlay(): void {
+    this.upNext.noteUserActivity();
     // The session is dead while the Up Next card is up; a stray Space or video
     // click must not restart the finished episode.
     if (this.upNext.state()) return;
@@ -107,18 +109,22 @@ export class PlayerPage {
   }
 
   protected onSeek(event: Event): void {
+    this.upNext.noteUserActivity();
     this.session.seek(Number((event.target as HTMLInputElement).value));
   }
 
   protected onVolume(event: Event): void {
+    this.upNext.noteUserActivity();
     this.session.setVolume(Number((event.target as HTMLInputElement).value));
   }
 
   protected onAudioChange(event: Event): void {
+    this.upNext.noteUserActivity();
     this.session.selectAudio(Number((event.target as HTMLSelectElement).value));
   }
 
   protected onSubtitleChange(event: Event): void {
+    this.upNext.noteUserActivity();
     const raw = (event.target as HTMLSelectElement).value;
     this.session.selectSubtitle(raw === '' ? null : Number(raw));
   }
@@ -128,13 +134,22 @@ export class PlayerPage {
    * exits the player to the page it was opened from.
    */
   protected toNeighbor(target: BaseItemDto | undefined): void {
+    // Also the Up Next policy's advance path — must NOT count as user
+    // activity, or every auto-advance would reset the still-watching guard.
     if (!target) return;
     void this.router.navigate(['/player', target.Id], { replaceUrl: true });
+  }
+
+  /** Chrome-button hop: a deliberate gesture, unlike a policy auto-advance. */
+  protected hopTo(target: BaseItemDto | undefined): void {
+    this.upNext.noteUserActivity();
+    this.toNeighbor(target);
   }
 
   // --- host chrome ---
 
   protected toggleFullscreen(): void {
+    this.upNext.noteUserActivity();
     if (document.fullscreenElement) void document.exitFullscreen();
     else void this.containerRef().nativeElement.requestFullscreen();
   }
@@ -146,6 +161,7 @@ export class PlayerPage {
   protected onKey(event: KeyboardEvent): void {
     if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement)
       return;
+    let handled = true;
     switch (event.key) {
       case ' ':
         event.preventDefault();
@@ -172,7 +188,10 @@ export class PlayerPage {
       case 'P':
         if (event.shiftKey) this.toNeighbor(this.neighbors.previous());
         break;
+      default:
+        handled = false;
     }
+    if (handled) this.upNext.noteUserActivity();
     this.poke();
   }
 
