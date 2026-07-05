@@ -82,14 +82,11 @@
     [class.opacity-0]="!controlsVisible()"
     [class.pointer-events-none]="!controlsVisible()"
   >
-    <input
-      type="range"
-      class="w-full accent-accent"
-      min="0"
-      [max]="session.duration()"
-      step="0.1"
-      [value]="session.position()"
-      (input)="onSeek($event)"
+    <jf-seek-bar
+      [position]="session.position()"
+      [duration]="session.duration()"
+      [chapters]="session.chapters()"
+      (seekTo)="onSeek($event)"
     />
     <div class="flex items-center gap-4">
       @if (isEpisode()) {

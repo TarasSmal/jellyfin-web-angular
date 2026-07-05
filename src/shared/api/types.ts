@@ -123,6 +123,13 @@ export interface PersonDto {
   PrimaryImageTag?: string;
 }
 
+/** Embedded chapter metadata; present when the item is fetched with the Chapters field. */
+export interface ChapterInfo {
+  StartPositionTicks: number;
+  Name?: string;
+  ImageTag?: string;
+}
+
 /** Jellyfin models every media object with one DTO; Type discriminates. */
 export interface BaseItemDto {
   People?: PersonDto[];
@@ -148,6 +155,7 @@ export interface BaseItemDto {
   IndexNumber?: number;
   ParentIndexNumber?: number;
   UserData?: UserItemData;
+  Chapters?: ChapterInfo[];
 }
 
 export interface ItemsResult {

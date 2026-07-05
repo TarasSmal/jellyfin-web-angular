@@ -30,4 +30,8 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Episode Neighbors** — The previous and next episode of the one currently hosted, in series play order across season boundaries. Undefined at the series' first/last episode and for anything that isn't an episode. Powers in-player episode navigation; unrelated to Next Up, which spans *series*, not adjacent episodes.
 
+**Chapter** — A named position on one item's timeline, embedded in the media file's metadata and served by Jellyfin as part of the item. Powers the seek bar's chapter marks; a chapter *contains* every moment from its start until the next chapter's start. Unnamed chapters are presented as "Chapter N". Distinct from media segments (server-side intro/credits detection), which this client does not use.
+
+**Chapter Mark** — The visual tick on the seek bar at a chapter's start. Marks are guidance, not targets: seeking never snaps to them; hovering or scrubbing the track reveals the containing chapter's name.
+
 **Live Resource** — A server read that stays current by socket push instead of polling. Two flavours: a *snapshot feed* replaces the whole value on every push (sessions, scheduled tasks); an *invalidation event* only marks the read stale so it refetches (library changes). Feeds and events carry domain names; the wire message names stay inside `shared/api`.

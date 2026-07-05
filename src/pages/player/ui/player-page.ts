@@ -18,6 +18,7 @@ import { formatClock } from '@shared/lib/clock';
 import { createArtworkWarmup } from '../model/artwork-warmup';
 import { nextEpisodeHint } from '../model/next-episode-hint';
 import { createUpNextPolicy } from '../model/up-next-policy';
+import { SeekBar } from './seek-bar';
 import { UpNextCard } from './up-next-card';
 
 const CONTROLS_TIMEOUT_MS = 3_000;
@@ -30,7 +31,7 @@ const CONTROLS_TIMEOUT_MS = 3_000;
 @Component({
   selector: 'jf-player-page',
   templateUrl: './player-page.html',
-  imports: [UpNextCard],
+  imports: [SeekBar, UpNextCard],
   host: {
     '(document:keydown)': 'onKey($event)',
   },
@@ -112,9 +113,10 @@ export class PlayerPage {
     this.session.togglePlay();
   }
 
-  protected onSeek(event: Event): void {
+  protected onSeek(seconds: number): void {
     this.upNext.noteUserActivity();
-    this.session.seek(Number((event.target as HTMLInputElement).value));
+    this.session.seek(seconds);
+    this.poke();
   }
 
   protected onVolume(event: Event): void {

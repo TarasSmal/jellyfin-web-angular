@@ -18,6 +18,7 @@ import {
   itemRequest,
 } from '@shared/api';
 import { ticksToSeconds } from '@shared/lib/ticks';
+import { Chapter, chaptersOf } from './chapter-timeline';
 import { MEDIA_ENGINE, MediaAttachment, VideoSurface } from './media-engine';
 import { ResolvedStream, resolveStream } from './stream-resolution';
 
@@ -60,6 +61,8 @@ export interface PlaySession {
   readonly volume: Signal<number>;
   readonly muted: Signal<boolean>;
   readonly item: Signal<BaseItemDto | undefined>;
+  /** The hosted item's Chapters, ordered, in seconds; empty when it has none. */
+  readonly chapters: Signal<Chapter[]>;
   readonly method: Signal<PlayMethod | null>;
   readonly audioTracks: Signal<TrackOption[]>;
   readonly subtitleTracks: Signal<TrackOption[]>;
@@ -120,6 +123,11 @@ class PlaySessionController implements PlaySession {
   readonly selectedSubtitle = signal<number | null>(null);
 
   readonly item: Signal<BaseItemDto | undefined>;
+
+  readonly chapters = computed<Chapter[]>(() => {
+    const item = this.item();
+    return item ? chaptersOf(item) : [];
+  });
 
   private readonly source = signal<MediaSourceInfo | null>(null);
 

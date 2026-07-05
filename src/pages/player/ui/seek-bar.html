@@ -1,0 +1,25 @@
+<div class="relative h-1 w-full overflow-hidden rounded-full bg-white/25">
+  <div class="h-full rounded-full bg-accent" [style.width.%]="scrub.displayFraction() * 100"></div>
+  @for (fraction of marks(); track fraction) {
+    <div
+      class="absolute top-0 h-full w-0.5 -translate-x-1/2 bg-black/70"
+      [style.left.%]="fraction * 100"
+      aria-hidden="true"
+    ></div>
+  }
+</div>
+
+<div
+  class="pointer-events-none absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent opacity-0 shadow transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+  [class.opacity-100]="scrub.dragging()"
+  [style.left.%]="scrub.displayFraction() * 100"
+></div>
+
+@if (scrub.tooltip(); as tip) {
+  <div
+    class="pointer-events-none absolute bottom-full mb-2 -translate-x-1/2 rounded border border-border bg-surface px-1.5 py-0.5 text-xs whitespace-nowrap text-text"
+    [style.left.%]="tip.fraction * 100"
+  >
+    {{ tip.label }}
+  </div>
+}

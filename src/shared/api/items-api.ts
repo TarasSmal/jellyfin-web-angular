@@ -45,13 +45,13 @@ export function nextUpRequest(config: ApiConfig, limit = 12): Req {
   };
 }
 
-/** One item with full detail fields (cast, genres, overview). */
+/** One item with full detail fields (cast, genres, overview, chapters). */
 export function itemRequest(config: ApiConfig, itemId: string): Req {
   const userId = config.userId();
   if (!userId) return undefined;
   return {
     url: config.url(`/Items/${itemId}`),
-    params: { userId, fields: 'People,Genres,Overview' },
+    params: { userId, fields: 'People,Genres,Overview,Chapters' },
   };
 }
 
