@@ -1,4 +1,6 @@
-<section class="relative aspect-[16/8] max-h-[75dvh] min-h-96 w-full overflow-hidden">
+<section
+  class="relative aspect-video max-h-[92dvh] min-h-96 w-full overflow-hidden min-[1990px]:aspect-[5/2]"
+>
   @if (backdropUrl(); as url) {
     <img
       [src]="url"
@@ -10,8 +12,18 @@
   <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent"></div>
   <div class="absolute inset-0 bg-gradient-to-r from-bg/80 via-transparent to-transparent"></div>
 
-  <div class="absolute inset-x-6 bottom-10 max-w-xl space-y-4 md:inset-x-12">
-    <h1 class="text-3xl font-bold tracking-tight md:text-5xl">{{ item().Name }}</h1>
+  <div class="absolute inset-x-6 bottom-10 max-w-xl space-y-4 md:inset-x-12 md:bottom-14">
+    @if (logoUrl(); as logo) {
+      <h1>
+        <img
+          [src]="logo"
+          [alt]="item().Name"
+          class="max-h-24 w-auto max-w-[70%] object-contain object-left drop-shadow-lg md:max-h-40 md:max-w-full min-[1990px]:max-h-48"
+        />
+      </h1>
+    } @else {
+      <h1 class="text-3xl font-bold tracking-tight md:text-5xl">{{ item().Name }}</h1>
+    }
     <p class="space-x-3 text-sm text-text-muted">
       @if (item().ProductionYear; as year) {
         <span>{{ year }}</span>
@@ -24,7 +36,8 @@
       }
     </p>
     @if (item().Overview; as overview) {
-      <p class="line-clamp-3 text-sm text-text-muted md:text-base">{{ overview }}</p>
+      <!-- Peacock hides the synopsis on small screens; the logo + facts carry the hero -->
+      <p class="hidden text-text-muted md:line-clamp-3 md:text-base">{{ overview }}</p>
     }
     <div class="flex gap-3 pt-1">
       <a

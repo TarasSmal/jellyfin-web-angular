@@ -8,7 +8,7 @@ import { ApiConfig } from './api-config';
  */
 
 const ITEM_FIELDS = 'PrimaryImageAspectRatio,Overview,Studios,SeriesStudio';
-const IMAGE_TYPES = 'Primary,Backdrop,Thumb';
+const IMAGE_TYPES = 'Primary,Backdrop,Thumb,Logo';
 
 type Req = HttpResourceRequest | undefined;
 

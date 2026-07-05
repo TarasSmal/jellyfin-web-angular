@@ -3,7 +3,7 @@ import { ApiConfig, BaseItemDto } from '@shared/api';
 function imageUrl(
   config: ApiConfig,
   itemId: string,
-  type: 'Primary' | 'Backdrop/0' | 'Thumb',
+  type: 'Primary' | 'Backdrop/0' | 'Thumb' | 'Logo',
   tag: string,
   sizeParam: string,
 ): string {
@@ -39,6 +39,16 @@ export function itemBackdropUrl(config: ApiConfig, item: BaseItemDto, width = 19
       parentTag,
       `fillWidth=${width}`,
     );
+  }
+  return null;
+}
+
+/** Transparent title-treatment logo. Episodes/seasons fall back to the series logo. */
+export function itemLogoUrl(config: ApiConfig, item: BaseItemDto, width = 800): string | null {
+  const tag = item.ImageTags?.['Logo'];
+  if (tag) return imageUrl(config, item.Id, 'Logo', tag, `maxWidth=${width}`);
+  if (item.ParentLogoItemId && item.ParentLogoImageTag) {
+    return imageUrl(config, item.ParentLogoItemId, 'Logo', item.ParentLogoImageTag, `maxWidth=${width}`);
   }
   return null;
 }

@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiConfig, BaseItemDto } from '@shared/api';
-import { itemBackdropUrl } from '@entities/item';
+import { itemBackdropUrl, itemLogoUrl } from '@entities/item';
 import { formatRuntime } from '@shared/lib/ticks';
 
 @Component({
@@ -15,6 +15,7 @@ export class HeroBillboard {
   readonly item = input.required<BaseItemDto>();
 
   protected readonly backdropUrl = computed(() => itemBackdropUrl(this.config, this.item()));
+  protected readonly logoUrl = computed(() => itemLogoUrl(this.config, this.item()));
   protected readonly runtime = computed(() => {
     const ticks = this.item().RunTimeTicks;
     return ticks ? formatRuntime(ticks) : null;

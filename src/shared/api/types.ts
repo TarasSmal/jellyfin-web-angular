@@ -161,6 +161,8 @@ export interface BaseItemDto {
   SeriesPrimaryImageTag?: string;
   ParentBackdropItemId?: string;
   ParentBackdropImageTags?: string[];
+  ParentLogoItemId?: string;
+  ParentLogoImageTag?: string;
   IndexNumber?: number;
   ParentIndexNumber?: number;
   UserData?: UserItemData;

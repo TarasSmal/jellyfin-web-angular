@@ -2,7 +2,9 @@
   @if (hero(); as heroItem) {
     <jf-hero-billboard [item]="heroItem" />
   } @else {
-    <div class="aspect-[16/8] max-h-[75dvh] min-h-96 w-full animate-pulse bg-surface"></div>
+    <div
+      class="aspect-video max-h-[92dvh] min-h-96 w-full animate-pulse bg-surface min-[1990px]:aspect-[5/2]"
+    ></div>
   }
 
   <div class="relative z-10 -mt-8 space-y-10">
