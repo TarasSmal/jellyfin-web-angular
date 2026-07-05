@@ -11,6 +11,7 @@ export interface VideoSurface {
   currentTime: number;
   readonly duration: number;
   readonly paused: boolean;
+  readonly buffered: { readonly length: number; end(index: number): number };
   volume: number;
   muted: boolean;
   src: string;

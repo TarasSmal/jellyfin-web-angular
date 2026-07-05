@@ -23,6 +23,16 @@ import { ResolvedStream, resolveStream } from './stream-resolution';
 
 const PROGRESS_INTERVAL_MS = 10_000;
 
+// Stall-at-tail watchdog: a transcode can deliver less media than its playlist
+// advertises (e.g. a dub audio track that ends before the credits). Playback
+// then freezes at the end of the buffer, short of the advertised duration, and
+// 'ended' never fires. Frozen playhead + frozen buffer this close to the end
+// is finished in every sense the viewer cares about.
+const STALL_TICK_MS = 1_000;
+const STALL_TICKS_TO_END = 5;
+const STALL_TAIL_SECONDS = 20;
+const STALL_EPSILON_SECONDS = 0.25;
+
 /** A selectable track (audio or subtitle) with its display label resolved. */
 export interface TrackOption {
   index: number;
@@ -343,6 +353,41 @@ class PlaySessionController implements PlaySession {
       this.ended.set(true); // ending policy is the host's
     };
 
+    // Watchdog for streams that end short of their advertised duration; treats
+    // a frozen playhead + frozen buffer near the tail as the missing 'ended'.
+    // Mid-episode rebuffering never trips it: there the buffer end keeps
+    // growing, and a stall further from the end is a real problem to surface.
+    let frozenTicks = 0;
+    let lastPosition = -1;
+    let lastBufferEnd = -1;
+    const watchdog = setInterval(() => {
+      if (surface.paused || !this.active) {
+        frozenTicks = 0;
+        return;
+      }
+      const position = surface.currentTime;
+      const bufferEnd = surface.buffered.length
+        ? surface.buffered.end(surface.buffered.length - 1)
+        : 0;
+      const frozen =
+        Math.abs(position - lastPosition) < STALL_EPSILON_SECONDS &&
+        Math.abs(bufferEnd - lastBufferEnd) < STALL_EPSILON_SECONDS;
+      lastPosition = position;
+      lastBufferEnd = bufferEnd;
+      frozenTicks = frozen ? frozenTicks + 1 : 0;
+      const nearEnd =
+        Number.isFinite(surface.duration) &&
+        surface.duration > 0 &&
+        surface.duration - position <= STALL_TAIL_SECONDS;
+      // At the buffer's end, not stranded behind it — a seek into the
+      // unbuffered tail waits for the transcoder, it doesn't end.
+      const consumedBuffer = Math.abs(bufferEnd - position) <= 1;
+      if (frozenTicks >= STALL_TICKS_TO_END && nearEnd && consumedBuffer) {
+        frozenTicks = 0;
+        onEnded();
+      }
+    }, STALL_TICK_MS);
+
     surface.addEventListener('play', onPlay);
     surface.addEventListener('pause', onPause);
     surface.addEventListener('timeupdate', onTime);
@@ -351,6 +396,7 @@ class PlaySessionController implements PlaySession {
     surface.addEventListener('ended', onEnded);
 
     onCleanup(() => {
+      clearInterval(watchdog);
       surface.removeEventListener('play', onPlay);
       surface.removeEventListener('pause', onPause);
       surface.removeEventListener('timeupdate', onTime);

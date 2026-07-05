@@ -21,6 +21,7 @@ class StubVideo implements VideoSurface {
   volume = 1;
   muted = false;
   src = '';
+  buffered: { length: number; end(index: number): number } = { length: 0, end: () => 0 };
   private readonly listeners = new Map<string, Set<EventListener>>();
 
   canPlayType(): string {
@@ -350,6 +351,79 @@ describe('PlaySession', () => {
     await settle();
 
     expect(session.ended()).toBe(false);
+  });
+
+  describe('stall-at-tail watchdog', () => {
+    /** Put the video in the observed failure state: playing, frozen at `pos`. */
+    function freezeAt(video: StubVideo, pos: number, duration: number): void {
+      video.duration = duration;
+      video.currentTime = pos;
+      video.buffered = { length: 1, end: () => pos };
+      video.emit('timeupdate');
+    }
+
+    it('ends the session when playback freezes at the buffer end near the advertised end', async () => {
+      // Replays the real trace: playlist advertises ~10s more media than the
+      // transcode delivers; playhead and buffer freeze, 'ended' never fires.
+      const video = new StubVideo();
+      const session = await boot(video);
+      video.play();
+      await settle();
+      log.length = 0;
+
+      freezeAt(video, 1410.4, 1420.5);
+      vi.advanceTimersByTime(7_000);
+
+      expect(session.ended()).toBe(true);
+      expect(log).toContain('stopped:ps-1@1410.4');
+    });
+
+    it('does not fake an ending for a mid-episode stall', async () => {
+      const video = new StubVideo();
+      const session = await boot(video);
+      video.play();
+      await settle();
+
+      freezeAt(video, 500, 1420.5);
+      vi.advanceTimersByTime(30_000);
+
+      expect(session.ended()).toBe(false);
+      expect(api.reportStopped).not.toHaveBeenCalled();
+    });
+
+    it('does not fake an ending while a seek into the unbuffered tail is pending', async () => {
+      // Seeking into the last seconds restarts the transcoder; the playhead
+      // sits in a void with the buffer far behind until data arrives.
+      const video = new StubVideo();
+      const session = await boot(video);
+      video.play();
+      await settle();
+
+      video.duration = 1420.5;
+      video.currentTime = 1410.4;
+      video.buffered = { length: 1, end: () => 1300 };
+      vi.advanceTimersByTime(10_000);
+
+      expect(session.ended()).toBe(false);
+      expect(api.reportStopped).not.toHaveBeenCalled();
+    });
+
+    it('does not fake an ending while the buffer is still growing at the tail', async () => {
+      // A slow transcoder near the end: playhead waits but media keeps coming.
+      const video = new StubVideo();
+      const session = await boot(video);
+      video.play();
+      await settle();
+
+      let bufferEnd = 1410.4;
+      video.duration = 1420.5;
+      video.currentTime = 1410.4;
+      video.buffered = { length: 1, end: () => (bufferEnd += 1) };
+      vi.advanceTimersByTime(10_000);
+
+      expect(session.ended()).toBe(false);
+      expect(api.reportStopped).not.toHaveBeenCalled();
+    });
   });
 
   it('exposes track labels with fallbacks resolved behind the interface', async () => {

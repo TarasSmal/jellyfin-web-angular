@@ -56,4 +56,8 @@ seek, volume, mute, select audio/subtitle, stop). The PlaySessionId and
   error-screens playback; an audio switch briefly re-mounts the stream (the old
   session is stopped first); changing the hosted item id cleanly restarts; and
   `ended` resets when the session rotates to a new item (it used to latch
-  forever), so a reused host observes each item's ending exactly once.
+  forever), so a reused host observes each item's ending exactly once; and a
+  playback that freezes (playhead and buffer both stalled) within the last 20s
+  of the advertised duration counts as ended — transcodes can deliver less
+  media than their playlist advertises, and the element's `ended` event then
+  never fires.
