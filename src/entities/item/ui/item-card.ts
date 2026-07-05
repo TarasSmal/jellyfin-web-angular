@@ -1,12 +1,21 @@
 import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiConfig, BaseItemDto } from '@shared/api';
-import { itemPosterUrl, itemThumbUrl, studioImageUrl } from '../lib/item-images';
+import { BlurImg } from '@shared/ui/blur-img';
+import {
+  itemPosterHash,
+  itemPosterSrcset,
+  itemPosterUrl,
+  itemThumbHash,
+  itemThumbSrcset,
+  itemThumbUrl,
+  studioImageUrl,
+} from '../lib/item-images';
 import { cardMeta, cardTitle, studioName } from '../lib/item-labels';
 
 @Component({
   selector: 'jf-item-card',
-  imports: [RouterLink],
+  imports: [RouterLink, BlurImg],
   templateUrl: './item-card.html',
 })
 export class ItemCard {
@@ -35,6 +44,16 @@ export class ItemCard {
     this.shape() === 'poster'
       ? itemPosterUrl(this.config, this.item())
       : itemThumbUrl(this.config, this.item()),
+  );
+
+  protected readonly imageHash = computed(() =>
+    this.shape() === 'poster' ? itemPosterHash(this.item()) : itemThumbHash(this.item()),
+  );
+
+  protected readonly imageSrcset = computed(() =>
+    this.shape() === 'poster'
+      ? itemPosterSrcset(this.config, this.item())
+      : itemThumbSrcset(this.config, this.item()),
   );
 
   protected readonly studioLogoUrl = computed(() => {

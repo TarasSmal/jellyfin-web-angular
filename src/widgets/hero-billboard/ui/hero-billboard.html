@@ -2,10 +2,15 @@
   class="relative aspect-video max-h-[92dvh] min-h-96 w-full overflow-hidden min-[1990px]:aspect-[5/2]"
 >
   @if (backdropUrl(); as url) {
-    <img
+    <jf-blur-img
       [src]="url"
+      [srcset]="backdropSrcset()"
+      sizes="100vw"
       [alt]="item().Name"
-      class="absolute inset-0 h-full w-full object-cover object-top"
+      [hash]="backdropHash()"
+      [priority]="true"
+      [positionTop]="true"
+      class="absolute inset-0"
     />
   }
   <!-- Peacock-style scrims: bottom fade into the page, left fade behind the text -->
@@ -14,11 +19,13 @@
 
   <div class="absolute inset-x-6 bottom-10 max-w-xl space-y-4 md:inset-x-12 md:bottom-14">
     @if (logoUrl(); as logo) {
-      <h1>
+      <!-- Fixed height so the title block doesn't reflow when the logo loads -->
+      <h1 class="h-24 md:h-40 min-[1990px]:h-48">
         <img
           [src]="logo"
           [alt]="item().Name"
-          class="max-h-24 w-auto max-w-[70%] object-contain object-left drop-shadow-lg md:max-h-40 md:max-w-full min-[1990px]:max-h-48"
+          fetchpriority="high"
+          class="h-full w-auto max-w-[70%] object-contain object-left-bottom drop-shadow-lg md:max-w-full"
         />
       </h1>
     } @else {

@@ -3,10 +3,15 @@
     <!-- Peacock-style title hero: full-bleed backdrop, logo bottom-left, synopsis right, pill row -->
     <section class="relative flex min-h-[75dvh] w-full flex-col justify-end overflow-hidden lg:min-h-[92dvh]">
       @if (backdrop(); as url) {
-        <img
+        <jf-blur-img
           [src]="url"
+          [srcset]="backdropSrcset()"
+          sizes="100vw"
           [alt]="it.Name"
-          class="absolute inset-0 h-full w-full object-cover object-top"
+          [hash]="backdropHash()"
+          [priority]="true"
+          [positionTop]="true"
+          class="absolute inset-0"
         />
       }
       <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent"></div>
@@ -16,11 +21,13 @@
         <div class="grid gap-6 lg:grid-cols-2 lg:items-end lg:gap-16">
           <div class="space-y-5">
             @if (logo(); as logoUrl) {
-              <h1>
+              <!-- Fixed height so the title block doesn't reflow when the logo loads -->
+              <h1 class="h-24 md:h-40">
                 <img
                   [src]="logoUrl"
                   [alt]="it.Name"
-                  class="max-h-24 w-auto max-w-[70%] object-contain object-left drop-shadow-lg md:max-h-40 md:max-w-full"
+                  fetchpriority="high"
+                  class="h-full w-auto max-w-[70%] object-contain object-left-bottom drop-shadow-lg md:max-w-full"
                 />
               </h1>
             } @else {

@@ -61,7 +61,7 @@ describe('createArtworkWarmup', () => {
     TestBed.tick();
 
     expect(fetched).toEqual([
-      'http://jf.test/Items/ep-6/Images/Primary?tag=tag-ep-6&fillWidth=640&quality=90',
+      'http://jf.test/Items/ep-6/Images/Primary?tag=tag-ep-6&fillWidth=640&quality=90&format=Webp',
     ]);
   });
 

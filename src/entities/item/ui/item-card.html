@@ -13,11 +13,11 @@
     [class.aspect-backdrop]="shape() === 'thumb'"
   >
     @if (imageUrl(); as url) {
-      <img
+      <jf-blur-img
         [src]="url"
-        alt=""
-        loading="lazy"
-        class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+        [srcset]="imageSrcset()"
+        [hash]="imageHash()"
+        class="relative h-full w-full transition duration-300 group-hover:scale-105"
       />
       @if (studioLogoUrl(); as logo) {
         @if (!studioLogoFailed()) {

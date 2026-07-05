@@ -13,7 +13,13 @@
         class="relative w-40 shrink-0 overflow-hidden rounded-md bg-surface-raised aspect-backdrop md:w-48"
       >
         @if (thumb(episode); as url) {
-          <img [src]="url" [alt]="episode.Name" loading="lazy" class="h-full w-full object-cover" />
+          <jf-blur-img
+            [src]="url"
+            [srcset]="thumbSrcset(episode)"
+            [alt]="episode.Name"
+            [hash]="thumbHash(episode)"
+            class="relative h-full w-full"
+          />
         }
         @if (progress(episode); as pct) {
           <div class="absolute inset-x-0 bottom-0 h-1 bg-black/50">

@@ -1,0 +1,21 @@
+<canvas
+  #placeholder
+  aria-hidden="true"
+  class="absolute inset-0 h-full w-full"
+  [class.hidden]="!painted()"
+></canvas>
+<img
+  [src]="src()"
+  [alt]="alt()"
+  [attr.srcset]="srcset()"
+  [attr.sizes]="sizes()"
+  [attr.loading]="priority() ? null : 'lazy'"
+  [attr.fetchpriority]="priority() ? 'high' : null"
+  decoding="async"
+  (load)="loaded.set(true)"
+  class="relative h-full w-full transition-opacity duration-300 motion-reduce:transition-none"
+  [class.opacity-0]="!loaded()"
+  [class.object-cover]="fit() === 'cover'"
+  [class.object-contain]="fit() === 'contain'"
+  [class.object-top]="positionTop()"
+/>

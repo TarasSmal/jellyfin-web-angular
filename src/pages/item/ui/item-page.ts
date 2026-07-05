@@ -10,15 +10,22 @@ import {
   itemRequest,
   seasonsRequest,
 } from '@shared/api';
-import { itemBackdropUrl, itemLogoUrl, personImageUrl } from '@entities/item';
+import {
+  itemBackdropHash,
+  itemBackdropSrcset,
+  itemBackdropUrl,
+  itemLogoUrl,
+  personImageUrl,
+} from '@entities/item';
 import { FavoriteButton } from '@features/toggle-favorite';
 import { WatchedButton } from '@features/mark-watched';
 import { EpisodeList } from '@widgets/episode-list';
+import { BlurImg } from '@shared/ui/blur-img';
 import { formatRuntime } from '@shared/lib/ticks';
 
 @Component({
   selector: 'jf-item-page',
-  imports: [RouterLink, FavoriteButton, WatchedButton, EpisodeList],
+  imports: [RouterLink, FavoriteButton, WatchedButton, EpisodeList, BlurImg],
   templateUrl: './item-page.html',
 })
 export class ItemPage {
@@ -48,6 +55,14 @@ export class ItemPage {
   protected readonly backdrop = computed(() => {
     const it = this.item.value();
     return it ? itemBackdropUrl(this.config, it) : null;
+  });
+  protected readonly backdropHash = computed(() => {
+    const it = this.item.value();
+    return it ? itemBackdropHash(it) : null;
+  });
+  protected readonly backdropSrcset = computed(() => {
+    const it = this.item.value();
+    return it ? itemBackdropSrcset(this.config, it) : null;
   });
   protected readonly logo = computed(() => {
     const it = this.item.value();

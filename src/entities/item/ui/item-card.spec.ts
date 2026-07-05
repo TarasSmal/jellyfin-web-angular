@@ -47,7 +47,7 @@ describe('ItemCard', () => {
     const fixture = createCard(movie);
     const el: HTMLElement = fixture.nativeElement;
     const badge = el.querySelector<HTMLImageElement>('img.drop-shadow-md');
-    expect(badge?.src).toBe('http://jf.test/Studios/NBC/Images/Primary?maxHeight=96&quality=90');
+    expect(badge?.src).toBe('http://jf.test/Studios/NBC/Images/Primary?maxHeight=96&quality=90&format=Webp');
 
     badge?.dispatchEvent(new Event('error'));
     fixture.detectChanges();

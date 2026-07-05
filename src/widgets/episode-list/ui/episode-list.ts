@@ -1,12 +1,13 @@
 import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ApiConfig, BaseItemDto } from '@shared/api';
-import { itemThumbUrl } from '@entities/item';
+import { itemThumbHash, itemThumbSrcset, itemThumbUrl } from '@entities/item';
+import { BlurImg } from '@shared/ui/blur-img';
 import { formatRuntime } from '@shared/lib/ticks';
 
 @Component({
   selector: 'jf-episode-list',
-  imports: [RouterLink],
+  imports: [RouterLink, BlurImg],
   templateUrl: './episode-list.html',
 })
 export class EpisodeList {
@@ -19,6 +20,14 @@ export class EpisodeList {
 
   protected thumb(episode: BaseItemDto): string | null {
     return itemThumbUrl(this.config, episode, 400);
+  }
+
+  protected thumbHash(episode: BaseItemDto): string | null {
+    return itemThumbHash(episode);
+  }
+
+  protected thumbSrcset(episode: BaseItemDto): string | null {
+    return itemThumbSrcset(this.config, episode, 400);
   }
 
   protected runtime(ticks: number): string {

@@ -1,6 +1,12 @@
 <article class="flex gap-3 rounded-xl border border-border bg-surface p-3">
   @if (posterUrl(); as url) {
-    <img [src]="url" alt="" class="h-20 w-14 shrink-0 rounded-md object-cover" />
+    <img
+      [src]="url"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      class="h-20 w-14 shrink-0 rounded-md object-cover"
+    />
   }
   <div class="min-w-0 flex-1 self-center">
     @if (session().NowPlayingItem) {
