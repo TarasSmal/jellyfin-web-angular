@@ -1,4 +1,20 @@
-import { Signal, computed, linkedSignal } from '@angular/core';
+import { Injector, Signal, computed, effect, linkedSignal, signal } from '@angular/core';
+
+/** How long each slide stays before auto-rotation advances. */
+export const ROTATION_INTERVAL_MS = 7000;
+
+/**
+ * Enables auto-rotation. Creating the timer requires an injection context
+ * (or an explicit `injector`); omit the options for a manual-only rotation.
+ */
+export interface RotationOptions {
+  intervalMs?: number;
+  injector?: Injector;
+  /** Transient suspension, e.g. while hovered or focused; resumes when false. */
+  held?: Signal<boolean>;
+  /** Set false to forbid auto-rotation entirely (reduced motion). Default true. */
+  autoRotate?: boolean;
+}
 
 /**
  * Headless state machine for a Rotator: which slide is active and which one
@@ -17,9 +33,17 @@ export interface Rotation {
   previous(): void;
   /** Jump straight to a slide. */
   goTo(index: number): void;
+  /** Whether the viewer paused auto-rotation via the toggle. */
+  readonly paused: Signal<boolean>;
+  /** Whether auto-rotation is over for good (the viewer navigated manually). */
+  readonly stopped: Signal<boolean>;
+  /** Whether the auto-advance timer is running right now. */
+  readonly autoRotating: Signal<boolean>;
+  /** Pause auto-rotation, or resume it if already paused. */
+  togglePaused(): void;
 }
 
-export function createRotation(count: Signal<number>): Rotation {
+export function createRotation(count: Signal<number>, options?: RotationOptions): Rotation {
   // Clamp rather than reset when the slide set changes size, so slides
   // arriving or leaving never strand the rotator on a hole.
   const activeIndex = linkedSignal<number, number>({
@@ -28,12 +52,45 @@ export function createRotation(count: Signal<number>): Rotation {
   });
   const multi = computed(() => count() > 1);
   const upcomingIndex = computed(() => (multi() ? (activeIndex() + 1) % count() : null));
+  const paused = signal(false);
+  const stopped = signal(false);
+
+  const autoAllowed = !!options && (options.autoRotate ?? true);
+  const autoRotating = computed(
+    () => autoAllowed && multi() && !paused() && !stopped() && !(options?.held?.() ?? false),
+  );
+
+  if (autoAllowed) {
+    const intervalMs = options?.intervalMs ?? ROTATION_INTERVAL_MS;
+    effect(
+      (onCleanup) => {
+        if (!autoRotating()) return;
+        const timer = setInterval(() => activeIndex.update((i) => (i + 1) % count()), intervalMs);
+        onCleanup(() => clearInterval(timer));
+      },
+      { injector: options.injector },
+    );
+  }
+
   return {
     activeIndex: activeIndex.asReadonly(),
     upcomingIndex,
     multi,
-    next: () => activeIndex.update((i) => (i + 1) % count()),
-    previous: () => activeIndex.update((i) => (i - 1 + count()) % count()),
-    goTo: (index) => activeIndex.set(index),
+    next: () => {
+      stopped.set(true);
+      activeIndex.update((i) => (i + 1) % count());
+    },
+    previous: () => {
+      stopped.set(true);
+      activeIndex.update((i) => (i - 1 + count()) % count());
+    },
+    goTo: (index) => {
+      stopped.set(true);
+      activeIndex.set(index);
+    },
+    paused: paused.asReadonly(),
+    stopped: stopped.asReadonly(),
+    autoRotating,
+    togglePaused: () => paused.update((p) => !p),
   };
 }

@@ -26,6 +26,31 @@
   /* Poster aspect ratios used across cards and grids */
   --aspect-poster: 2 / 3;
   --aspect-backdrop: 16 / 9;
+
+  /* Rotator: the active dot's fill sweeps one auto-rotation interval; the
+     component binds the real duration and play-state inline, and restarts
+     the sweep by flipping between the two identical keyframe aliases. */
+  --animate-dot-fill: dot-fill 7s linear forwards;
+}
+
+/* Outside @theme so both aliases are always emitted — the refill alias is
+   only ever referenced from an animation-name binding Tailwind cannot see. */
+@keyframes dot-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes dot-refill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 html {

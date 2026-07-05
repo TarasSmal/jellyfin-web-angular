@@ -1,28 +1,92 @@
-<section class="group relative" aria-roledescription="carousel" [attr.aria-label]="label()">
-  @for (slide of rendered(); track slide.index) {
-    <div
-      role="group"
-      aria-roledescription="slide"
-      [attr.aria-label]="slide.index + 1 + ' of ' + count()"
-      [attr.aria-hidden]="slide.state === 'active' ? null : 'true'"
-      [attr.inert]="slide.state === 'active' ? null : ''"
-      [class]="
-        slide.state === 'active'
-          ? 'relative z-20 opacity-100 transition-opacity duration-500'
-          : slide.state === 'leaving'
-            ? 'absolute inset-0 z-10'
-            : 'absolute inset-0 z-0 opacity-0'
-      "
-    >
-      <ng-container [ngTemplateOutlet]="slide.template" />
-    </div>
-  }
+<section
+  class="group relative touch-pan-y"
+  aria-roledescription="carousel"
+  [attr.aria-label]="label()"
+  (mouseenter)="hovered.set(true)"
+  (mouseleave)="hovered.set(false)"
+  (focusin)="focused.set(true)"
+  (focusout)="focused.set(false)"
+  (pointerdown)="onPointerDown($event)"
+  (pointerup)="onPointerUp($event)"
+  (pointercancel)="onPointerCancel()"
+>
+  <!-- APG carousel: announce slide changes only when they are viewer-initiated -->
+  <div [attr.aria-live]="rotation.autoRotating() ? 'off' : 'polite'">
+    @for (slide of rendered(); track slide.index) {
+      <div
+        role="group"
+        aria-roledescription="slide"
+        [attr.aria-label]="slide.index + 1 + ' of ' + count()"
+        [attr.aria-hidden]="slide.state === 'active' ? null : 'true'"
+        [attr.inert]="slide.state === 'active' ? null : ''"
+        [class]="
+          slide.state === 'active'
+            ? 'relative z-20 opacity-100 transition-opacity duration-500'
+            : slide.state === 'leaving'
+              ? 'absolute inset-0 z-10'
+              : 'absolute inset-0 z-0 opacity-0'
+        "
+      >
+        <ng-container [ngTemplateOutlet]="slide.template" />
+      </div>
+    }
+  </div>
 
   @if (rotation.multi()) {
+    <div class="absolute right-6 bottom-4 z-30 flex items-center md:right-12">
+      @if (autoLive()) {
+        <button
+          type="button"
+          aria-label="Pause auto-rotation"
+          [attr.aria-pressed]="rotation.paused()"
+          (click)="rotation.togglePaused()"
+          class="p-1 text-text/70 transition-colors hover:text-text"
+        >
+          @if (rotation.paused()) {
+            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+              <path d="M8 5.5v13l11-6.5z" />
+            </svg>
+          } @else {
+            <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+              <path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z" />
+            </svg>
+          }
+        </button>
+      }
+      <div role="group" aria-label="Choose slide" class="flex">
+        @for (i of indices(); track i) {
+          <button
+            type="button"
+            [attr.aria-label]="'Go to slide ' + (i + 1) + ' of ' + count()"
+            [attr.aria-current]="i === rotation.activeIndex() ? 'true' : null"
+            (click)="goTo(i)"
+            class="group/dot p-2"
+          >
+            @if (i === rotation.activeIndex() && autoLive()) {
+              <span class="relative block h-2 w-6 overflow-hidden rounded-full bg-text/40">
+                <!-- The epoch flips the keyframe alias to restart the sweep from zero -->
+                <span
+                  class="absolute inset-0 origin-left animate-dot-fill rounded-full bg-text"
+                  [style.animation-name]="fillEpoch() % 2 ? 'dot-refill' : 'dot-fill'"
+                  [style.animation-duration.ms]="intervalMs"
+                  [style.animation-play-state]="rotation.autoRotating() ? 'running' : 'paused'"
+                ></span>
+              </span>
+            } @else {
+              <span
+                class="block h-2 w-2 rounded-full transition-colors"
+                [class]="i === rotation.activeIndex() ? 'bg-text' : 'bg-text/40 group-hover/dot:bg-text/70'"
+              ></span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
     <button
       type="button"
       aria-label="Previous slide"
-      (click)="previous()"
+      (click)="rotation.previous()"
       class="absolute top-1/2 left-3 z-30 -translate-y-1/2 rounded-full bg-bg/50 p-2 text-text opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-bg/80 focus-visible:opacity-100"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-6 w-6" aria-hidden="true">
@@ -32,7 +96,7 @@
     <button
       type="button"
       aria-label="Next slide"
-      (click)="next()"
+      (click)="rotation.next()"
       class="absolute top-1/2 right-3 z-30 -translate-y-1/2 rounded-full bg-bg/50 p-2 text-text opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-bg/80 focus-visible:opacity-100"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-6 w-6" aria-hidden="true">
