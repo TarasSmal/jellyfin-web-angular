@@ -1,58 +1,63 @@
-<section
-  class="relative aspect-video max-h-[92dvh] min-h-96 w-full overflow-hidden min-[1990px]:aspect-[5/2]"
->
-  @if (backdropUrl(); as url) {
-    <jf-blur-img
-      [src]="url"
-      [srcset]="backdropSrcset()"
-      sizes="100vw"
-      [alt]="item().Name"
-      [hash]="backdropHash()"
-      [priority]="true"
-      [positionTop]="true"
-      class="absolute inset-0"
-    />
-  }
-  <!-- Peacock-style scrims: bottom fade into the page, left fade behind the text -->
-  <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent"></div>
-  <div class="absolute inset-0 bg-gradient-to-r from-bg/80 via-transparent to-transparent"></div>
-
-  <div class="absolute inset-x-6 bottom-10 max-w-xl space-y-4 md:inset-x-12 md:bottom-14">
-    @if (logoUrl(); as logo) {
-      <!-- Fixed height so the title block doesn't reflow when the logo loads -->
-      <h1 class="h-24 md:h-40 min-[1990px]:h-48">
-        <img
-          [src]="logo"
-          [alt]="item().Name"
-          fetchpriority="high"
-          class="h-full w-auto max-w-[70%] object-contain object-left-bottom drop-shadow-lg md:max-w-full"
+<jf-rotator label="Featured">
+  @for (slide of slides(); track slide.item.Id) {
+    <section
+      *jfRotatorSlide
+      class="relative aspect-video max-h-[92dvh] min-h-96 w-full overflow-hidden min-[1990px]:aspect-[5/2]"
+    >
+      @if (slide.backdropUrl; as url) {
+        <jf-blur-img
+          [src]="url"
+          [srcset]="slide.backdropSrcset"
+          sizes="100vw"
+          [alt]="slide.item.Name"
+          [hash]="slide.backdropHash"
+          [priority]="slide.priority"
+          [positionTop]="true"
+          class="absolute inset-0"
         />
-      </h1>
-    } @else {
-      <h1 class="text-3xl font-bold tracking-tight md:text-5xl">{{ item().Name }}</h1>
-    }
-    <p class="space-x-3 text-sm text-text-muted">
-      @if (item().ProductionYear; as year) {
-        <span>{{ year }}</span>
       }
-      @if (runtime(); as rt) {
-        <span>{{ rt }}</span>
-      }
-      @if (item().OfficialRating; as rating) {
-        <span class="rounded border border-border px-1.5 py-0.5 text-xs">{{ rating }}</span>
-      }
-    </p>
-    @if (item().Overview; as overview) {
-      <!-- Peacock hides the synopsis on small screens; the logo + facts carry the hero -->
-      <p class="hidden text-text-muted md:line-clamp-3 md:text-base">{{ overview }}</p>
-    }
-    <div class="flex gap-3 pt-1">
-      <a
-        [routerLink]="['/item', item().Id]"
-        class="rounded-lg bg-text px-6 py-2.5 font-semibold text-bg transition-opacity hover:opacity-80"
-      >
-        Details
-      </a>
-    </div>
-  </div>
-</section>
+      <!-- Peacock-style scrims: bottom fade into the page, left fade behind the text -->
+      <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/30 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-bg/80 via-transparent to-transparent"></div>
+
+      <div class="absolute inset-x-6 bottom-10 max-w-xl space-y-4 md:inset-x-12 md:bottom-14">
+        @if (slide.logoUrl; as logo) {
+          <!-- Fixed height so the title block doesn't reflow when the logo loads -->
+          <h1 class="h-24 md:h-40 min-[1990px]:h-48">
+            <img
+              [src]="logo"
+              [alt]="slide.item.Name"
+              [attr.fetchpriority]="slide.priority ? 'high' : null"
+              class="h-full w-auto max-w-[70%] object-contain object-left-bottom drop-shadow-lg md:max-w-full"
+            />
+          </h1>
+        } @else {
+          <h1 class="text-3xl font-bold tracking-tight md:text-5xl">{{ slide.item.Name }}</h1>
+        }
+        <p class="space-x-3 text-sm text-text-muted">
+          @if (slide.item.ProductionYear; as year) {
+            <span>{{ year }}</span>
+          }
+          @if (slide.runtime; as rt) {
+            <span>{{ rt }}</span>
+          }
+          @if (slide.item.OfficialRating; as rating) {
+            <span class="rounded border border-border px-1.5 py-0.5 text-xs">{{ rating }}</span>
+          }
+        </p>
+        @if (slide.item.Overview; as overview) {
+          <!-- Peacock hides the synopsis on small screens; the logo + facts carry the hero -->
+          <p class="hidden text-text-muted md:line-clamp-3 md:text-base">{{ overview }}</p>
+        }
+        <div class="flex gap-3 pt-1">
+          <a
+            [routerLink]="['/item', slide.item.Id]"
+            class="rounded-lg bg-text px-6 py-2.5 font-semibold text-bg transition-opacity hover:opacity-80"
+          >
+            Details
+          </a>
+        </div>
+      </div>
+    </section>
+  }
+</jf-rotator>

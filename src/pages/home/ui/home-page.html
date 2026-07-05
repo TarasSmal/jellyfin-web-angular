@@ -1,7 +1,7 @@
 <main class="pb-16">
-  @if (hero(); as heroItem) {
-    <jf-hero-billboard [item]="heroItem" />
-  } @else {
+  @if (featured().length) {
+    <jf-hero-billboard [items]="featured()" />
+  } @else if (featuredLoading()) {
     <div
       class="aspect-video max-h-[92dvh] min-h-96 w-full animate-pulse bg-surface min-[1990px]:aspect-[5/2]"
     ></div>

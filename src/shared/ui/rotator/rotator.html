@@ -1,0 +1,43 @@
+<section class="group relative" aria-roledescription="carousel" [attr.aria-label]="label()">
+  @for (slide of rendered(); track slide.index) {
+    <div
+      role="group"
+      aria-roledescription="slide"
+      [attr.aria-label]="slide.index + 1 + ' of ' + count()"
+      [attr.aria-hidden]="slide.state === 'active' ? null : 'true'"
+      [attr.inert]="slide.state === 'active' ? null : ''"
+      [class]="
+        slide.state === 'active'
+          ? 'relative z-20 opacity-100 transition-opacity duration-500'
+          : slide.state === 'leaving'
+            ? 'absolute inset-0 z-10'
+            : 'absolute inset-0 z-0 opacity-0'
+      "
+    >
+      <ng-container [ngTemplateOutlet]="slide.template" />
+    </div>
+  }
+
+  @if (rotation.multi()) {
+    <button
+      type="button"
+      aria-label="Previous slide"
+      (click)="previous()"
+      class="absolute top-1/2 left-3 z-30 -translate-y-1/2 rounded-full bg-bg/50 p-2 text-text opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-bg/80 focus-visible:opacity-100"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-6 w-6" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+    <button
+      type="button"
+      aria-label="Next slide"
+      (click)="next()"
+      class="absolute top-1/2 right-3 z-30 -translate-y-1/2 rounded-full bg-bg/50 p-2 text-text opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 hover:bg-bg/80 focus-visible:opacity-100"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="h-6 w-6" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+  }
+</section>

@@ -11,6 +11,7 @@ import {
 } from '@shared/api';
 import { HeroBillboard } from '@widgets/hero-billboard';
 import { MediaRail } from '@widgets/media-rail';
+import { selectFeaturedItems } from '../model/featured-items';
 
 @Component({
   selector: 'jf-home-page',
@@ -40,13 +41,12 @@ export class HomePage {
     return id ? latestItemsRequest(this.config, id) : undefined;
   });
 
-  /** Featured item: newest movie with a backdrop, else newest show, else a resume item. */
-  protected readonly hero = computed<BaseItemDto | undefined>(() => {
-    const candidates = [
-      ...(this.latestMovies.value() ?? []),
-      ...(this.latestShows.value() ?? []),
-      ...(this.resume.value()?.Items ?? []),
-    ];
-    return candidates.find((i) => i.BackdropImageTags?.length) ?? candidates[0];
-  });
+  /** The Featured Items the hero billboard rotates through. */
+  protected readonly featured = computed(() =>
+    selectFeaturedItems(this.latestMovies.value() ?? [], this.latestShows.value() ?? []),
+  );
+
+  protected readonly featuredLoading = computed(
+    () => this.latestMovies.isLoading() || this.latestShows.isLoading(),
+  );
 }
