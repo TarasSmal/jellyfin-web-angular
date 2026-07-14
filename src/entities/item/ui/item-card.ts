@@ -25,6 +25,8 @@ export class ItemCard {
   readonly shape = input<'poster' | 'thumb'>('poster');
   /** Fill the parent cell (grid layouts) instead of fixed rail widths. */
   readonly fluid = input(false);
+  /** Where the card navigates: the item's detail page, or straight into playback. */
+  readonly linkTarget = input<'detail' | 'player'>('detail');
 
   protected readonly title = computed(() => cardTitle(this.item()));
   protected readonly meta = computed(() => cardMeta(this.item()));
@@ -33,11 +35,22 @@ export class ItemCard {
     return pct && pct > 0 && pct < 100 ? pct : null;
   });
 
-  /** Episodes and seasons navigate to their series page; everything else to itself. */
-  protected readonly linkId = computed(() => {
+  /**
+   * Detail links send episodes and seasons to their series page; play links
+   * always target the item itself.
+   */
+  protected readonly link = computed(() => {
     const item = this.item();
+    if (this.linkTarget() === 'player') return ['/player', item.Id];
     const isChildOfSeries = item.Type === 'Episode' || item.Type === 'Season';
-    return isChildOfSeries && item.SeriesId ? item.SeriesId : item.Id;
+    return ['/item', isChildOfSeries && item.SeriesId ? item.SeriesId : item.Id];
+  });
+
+  /** Play targets announce the action; detail targets let the card text speak. */
+  protected readonly ariaLabel = computed(() => {
+    if (this.linkTarget() !== 'player') return null;
+    const meta = this.meta();
+    return `Play ${this.title()}${meta ? ` — ${meta}` : ''}`;
   });
 
   protected readonly imageUrl = computed(() =>

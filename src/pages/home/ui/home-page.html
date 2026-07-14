@@ -11,12 +11,14 @@
     <jf-media-rail
       title="Continue Watching"
       shape="thumb"
+      linkTarget="player"
       [items]="resume.value()?.Items"
       [loading]="resume.isLoading()"
     />
     <jf-media-rail
       title="Next Up"
       shape="thumb"
+      linkTarget="player"
       [items]="nextUp.value()?.Items"
       [loading]="nextUp.isLoading()"
     />

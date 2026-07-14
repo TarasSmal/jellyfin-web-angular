@@ -16,9 +16,9 @@ Glossary of the language used in this project. Terms are added as they crystalli
 
 **Rotator** — The generic one-slide-at-a-time cycling surface: crossfading slides, prev/next arrows, position dots, and a pause control. Distinct from a Rail, which shows many cards at once and scrolls; a Rotator shows one slide and cycles. The hero billboard is its first use.
 
-**Continue Watching** — Items the user has partially played, resumable from where they left off. Distinct from Next Up.
+**Continue Watching** — Items the user has partially played, resumable from where they left off. Distinct from Next Up. Its cards are play targets: clicking one starts playback at the saved position rather than opening the item's detail page.
 
-**Next Up** — The next unwatched episode of each series the user is actively watching. Episode-only; never contains movies.
+**Next Up** — The next unwatched episode of each series the user is actively watching. Episode-only; never contains movies. Its cards are play targets: clicking one plays the episode from the beginning rather than opening the series page.
 
 **Direct Play** — Playback where the browser plays the original file untouched; server does no work.
 

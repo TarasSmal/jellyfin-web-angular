@@ -16,7 +16,7 @@
         }
       } @else {
         @for (item of items(); track item.Id) {
-          <jf-item-card [item]="item" [shape]="shape()" />
+          <jf-item-card [item]="item" [shape]="shape()" [linkTarget]="linkTarget()" />
         }
       }
     </div>

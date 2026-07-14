@@ -12,6 +12,8 @@ export class MediaRail {
   readonly items = input<BaseItemDto[] | undefined>(undefined);
   readonly shape = input<'poster' | 'thumb'>('poster');
   readonly loading = input(false);
+  /** Where cards navigate: the item's detail page, or straight into playback. */
+  readonly linkTarget = input<'detail' | 'player'>('detail');
 
   protected readonly skeletons = Array.from({ length: 8 }, (_, i) => i);
 }
