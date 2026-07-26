@@ -53,6 +53,25 @@
   }
 }
 
+/* Tailwind v4 preflight sets `cursor: default` on buttons; we want the classic
+   pointer on anything clickable, and the default arrow once it is disabled. */
+@layer base {
+  button,
+  [role='button'],
+  summary,
+  label:has(> input[type='checkbox']),
+  label:has(> input[type='radio']) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'],
+  select:disabled,
+  input:disabled {
+    cursor: default;
+  }
+}
+
 html {
   background-color: var(--color-bg);
   color: var(--color-text);
