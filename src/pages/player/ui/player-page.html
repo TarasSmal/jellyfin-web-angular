@@ -146,6 +146,20 @@
         <span class="hidden max-w-80 truncate text-sm text-text-muted lg:block">{{ hint }}</span>
       }
 
+      @if (session.qualityOptions().length) {
+        <select
+          class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
+          [value]="session.selectedQuality() ?? ''"
+          (change)="onQualityChange($event)"
+          title="Quality"
+        >
+          <option value="">Auto</option>
+          @for (quality of session.qualityOptions(); track quality.bitrate) {
+            <option [value]="quality.bitrate">{{ quality.label }}</option>
+          }
+        </select>
+      }
+
       @if (session.audioTracks().length > 1) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"

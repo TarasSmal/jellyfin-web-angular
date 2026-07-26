@@ -20,6 +20,7 @@ import {
 import { ticksToSeconds } from '@shared/lib/ticks';
 import { Chapter, chaptersOf } from './chapter-timeline';
 import { MEDIA_ENGINE, MediaAttachment, VideoSurface } from './media-engine';
+import { QualityOption, loadMaxBitrate, qualityOptionsFor, saveMaxBitrate } from './quality';
 import { ResolvedStream, resolveStream } from './stream-resolution';
 
 const PROGRESS_INTERVAL_MS = 10_000;
@@ -69,6 +70,10 @@ export interface PlaySession {
   readonly selectedAudio: Signal<number | undefined>;
   readonly selectedSubtitle: Signal<number | null>;
   readonly activeSubtitle: Signal<ActiveSubtitle[]>;
+  /** Bitrate caps worth offering for the current source, highest first. */
+  readonly qualityOptions: Signal<QualityOption[]>;
+  /** The active cap in bps, or null for Auto (no cap). */
+  readonly selectedQuality: Signal<number | null>;
 
   togglePlay(): void;
   seek(seconds: number): void;
@@ -76,6 +81,7 @@ export interface PlaySession {
   toggleMute(): void;
   selectAudio(index: number): void;
   selectSubtitle(index: number | null): void;
+  selectQuality(bitrate: number | null): void;
   stop(): void;
 }
 
@@ -121,6 +127,7 @@ class PlaySessionController implements PlaySession {
   readonly method = signal<PlayMethod | null>(null);
   readonly selectedAudio = signal<number | undefined>(undefined);
   readonly selectedSubtitle = signal<number | null>(null);
+  readonly selectedQuality = signal<number | null>(loadMaxBitrate());
 
   readonly item: Signal<BaseItemDto | undefined>;
 
@@ -142,6 +149,8 @@ class PlaySessionController implements PlaySession {
       .filter((s) => s.Type === 'Subtitle' && (s.IsTextSubtitleStream || s.DeliveryMethod === 'External'))
       .map((s) => ({ index: s.Index, label: s.DisplayTitle ?? s.Language ?? `Sub ${s.Index}` })),
   );
+
+  readonly qualityOptions = computed<QualityOption[]>(() => qualityOptionsFor(this.source()));
 
   readonly activeSubtitle = computed<ActiveSubtitle[]>(() => {
     const source = this.source();
@@ -237,6 +246,24 @@ class PlaySessionController implements PlaySession {
     this.selectedSubtitle.set(index);
   }
 
+  async selectQuality(bitrate: number | null): Promise<void> {
+    if (this.switching) return; // single-flight, shared with audio switches
+    const item = this.item();
+    if (!item || bitrate === this.selectedQuality()) return;
+    this.switching = true;
+    const position = this.position();
+    this.selectedQuality.set(bitrate);
+    saveMaxBitrate(bitrate);
+    try {
+      // Same atomic rotation as an audio switch; the new session picks the
+      // cap up from selectedQuality and keeps the chosen audio track.
+      this.endSession();
+      await this.startSession(item, this.selectedAudio(), position);
+    } finally {
+      this.switching = false;
+    }
+  }
+
   stop(): void {
     this.surface()?.pause();
     this.endSession();
@@ -258,7 +285,10 @@ class PlaySessionController implements PlaySession {
 
     let stream: ResolvedStream;
     try {
-      stream = await resolveStream(this.api, item.Id, { audioStreamIndex: audioIndex });
+      stream = await resolveStream(this.api, item.Id, {
+        audioStreamIndex: audioIndex,
+        maxStreamingBitrate: this.selectedQuality() ?? undefined,
+      });
     } catch {
       if (gen === this.gen) {
         this.error.set(true);

@@ -17,6 +17,9 @@ export interface MediaStreamDto {
   IsTextSubtitleStream?: boolean;
   DeliveryMethod?: string;
   DeliveryUrl?: string;
+  Width?: number;
+  Height?: number;
+  BitRate?: number;
 }
 
 export interface MediaSourceInfo {
@@ -111,6 +114,8 @@ const DEVICE_PROFILE = {
 export interface PlaybackInfoOptions {
   audioStreamIndex?: number;
   subtitleStreamIndex?: number;
+  /** Bitrate cap in bps; the server transcodes down to it when the source exceeds it. */
+  maxStreamingBitrate?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -122,12 +127,16 @@ export class PlaybackApi {
     itemId: string,
     options: PlaybackInfoOptions = {},
   ): Promise<PlaybackInfoResponse> {
+    // The cap must land both top-level (drives the direct-play decision) and
+    // in the profile (drives the transcode ladder the server builds).
+    const bitrate = options.maxStreamingBitrate ?? DEVICE_PROFILE.MaxStreamingBitrate;
     return firstValueFrom(
       this.http.post<PlaybackInfoResponse>(
         this.config.url(`/Items/${itemId}/PlaybackInfo`),
         {
-          DeviceProfile: DEVICE_PROFILE,
+          DeviceProfile: { ...DEVICE_PROFILE, MaxStreamingBitrate: bitrate },
           AutoOpenLiveStream: true,
+          MaxStreamingBitrate: bitrate,
           AudioStreamIndex: options.audioStreamIndex,
           SubtitleStreamIndex: options.subtitleStreamIndex,
         },

@@ -135,6 +135,12 @@ export class PlayerPage {
     this.session.selectSubtitle(raw === '' ? null : Number(raw));
   }
 
+  protected onQualityChange(event: Event): void {
+    this.upNext.noteUserActivity();
+    const raw = (event.target as HTMLSelectElement).value;
+    this.session.selectQuality(raw === '' ? null : Number(raw));
+  }
+
   /**
    * Episode-to-episode hops replace the history entry so browser Back always
    * exits the player to the page it was opened from.

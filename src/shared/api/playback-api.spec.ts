@@ -74,4 +74,24 @@ describe('PlaybackApi reporting', () => {
 
     await expect(done).resolves.toBeUndefined();
   });
+
+  it('sends a quality cap both top-level and inside the device profile', async () => {
+    const done = api.getPlaybackInfo('item-1', { maxStreamingBitrate: 4_000_000 });
+
+    const req = http.expectOne((r) => r.url === 'http://jf.test/Items/item-1/PlaybackInfo');
+    expect(req.request.body.MaxStreamingBitrate).toBe(4_000_000);
+    expect(req.request.body.DeviceProfile.MaxStreamingBitrate).toBe(4_000_000);
+    req.flush({ MediaSources: [], PlaySessionId: 'ps' });
+    await done;
+  });
+
+  it('falls back to the profile ceiling when no cap is given', async () => {
+    const done = api.getPlaybackInfo('item-1');
+
+    const req = http.expectOne((r) => r.url === 'http://jf.test/Items/item-1/PlaybackInfo');
+    expect(req.request.body.MaxStreamingBitrate).toBe(120_000_000);
+    expect(req.request.body.DeviceProfile.MaxStreamingBitrate).toBe(120_000_000);
+    req.flush({ MediaSources: [], PlaySessionId: 'ps' });
+    await done;
+  });
 });

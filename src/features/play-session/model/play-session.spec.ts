@@ -63,6 +63,7 @@ function makeApi() {
             SupportsDirectPlay: true,
             DefaultAudioStreamIndex: 1,
             MediaStreams: [
+              { Index: 0, Type: 'Video', Height: 1080 },
               { Index: 1, Type: 'Audio', DisplayTitle: 'English' },
               { Index: 2, Type: 'Audio', DisplayTitle: 'French' },
               { Index: 3, Type: 'Subtitle', IsTextSubtitleStream: true, DisplayTitle: 'English' },
@@ -127,6 +128,7 @@ describe('PlaySession', () => {
   let fatal: () => void;
 
   beforeEach(() => {
+    localStorage.clear(); // saved quality caps must not leak between tests
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     TestBed.resetTestingModule();
     ({ api, log } = makeApi());
@@ -257,6 +259,55 @@ describe('PlaySession', () => {
     log.length = 0;
     vi.advanceTimersByTime(10_000);
     expect(log).toEqual(['progress:ps-2']); // only the new timer survives
+  });
+
+  it('rotates atomically on quality switch and caps the next PlaybackInfo request', async () => {
+    const video = new StubVideo();
+    const session = await boot(video);
+    video.play();
+    await settle();
+    video.currentTime = 45;
+    video.emit('timeupdate');
+
+    log.length = 0;
+    await session.selectQuality(4_000_000);
+
+    expect(log[0]).toBe('stopped:ps-1@45');
+    expect(log[1]).toBe('start:ps-2@45');
+    expect(api.getPlaybackInfo).toHaveBeenLastCalledWith('movie-1', {
+      audioStreamIndex: 1,
+      maxStreamingBitrate: 4_000_000,
+    });
+    expect(session.selectedQuality()).toBe(4_000_000);
+    expect(localStorage.getItem('jf.maxStreamingBitrate')).toBe('4000000');
+  });
+
+  it('starts new sessions with the persisted quality cap and Auto clears it', async () => {
+    localStorage.setItem('jf.maxStreamingBitrate', '8000000');
+    const video = new StubVideo();
+    const session = await boot(video);
+
+    expect(session.selectedQuality()).toBe(8_000_000);
+    expect(api.getPlaybackInfo).toHaveBeenCalledWith('movie-1', {
+      audioStreamIndex: undefined,
+      maxStreamingBitrate: 8_000_000,
+    });
+
+    await session.selectQuality(null);
+    expect(api.getPlaybackInfo).toHaveBeenLastCalledWith('movie-1', {
+      audioStreamIndex: 1, // rotation keeps the adopted default audio track
+      maxStreamingBitrate: undefined,
+    });
+    expect(localStorage.getItem('jf.maxStreamingBitrate')).toBeNull();
+  });
+
+  it('offers only quality tiers at or below the source resolution', async () => {
+    const video = new StubVideo();
+    const session = await boot(video);
+
+    const labels = session.qualityOptions().map((o) => o.label);
+    expect(labels[0]).toBe('1080p - 60 Mbps'); // mock source is 1080p
+    expect(labels).not.toContain('4K - 120 Mbps');
   });
 
   it('ignores a second audio switch while one is in flight', async () => {
