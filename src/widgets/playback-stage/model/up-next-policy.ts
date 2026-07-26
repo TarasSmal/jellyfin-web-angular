@@ -124,7 +124,11 @@ export function createUpNextPolicy(host: UpNextHost, options?: UpNextOptions): U
     state: computed(() => {
       const current = phase();
       if (current.kind === 'countdown')
-        return { episode: current.episode, mode: 'countdown' as const, secondsLeft: current.secondsLeft };
+        return {
+          episode: current.episode,
+          mode: 'countdown' as const,
+          secondsLeft: current.secondsLeft,
+        };
       if (current.kind === 'confirm')
         return { episode: current.episode, mode: 'confirm' as const, secondsLeft: 0 };
       return null;

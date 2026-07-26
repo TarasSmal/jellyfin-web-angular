@@ -45,3 +45,9 @@ Glossary of the language used in this project. Terms are added as they crystalli
 **Live Resource** — A server read that stays current by socket push instead of polling. Two flavours: a *snapshot feed* replaces the whole value on every push (sessions, scheduled tasks); an *invalidation event* only marks the read stale so it refetches (library changes). Feeds and events carry domain names; the wire message names stay inside `shared/api`.
 
 **Preferences** — A user's own settings for how playback and libraries behave for them: language preferences, subtitle mode, autoplay, what the library rails show. Set by the account holder on their profile page. Distinct from **Policy**, the permissions an administrator grants an account (admin rights, library access, transcoding, session limits) — an account holder can change their Preferences but never their Policy.
+
+**Playback Stage** — The single always-mounted surface that owns the video element and hosts the Play Session for one playback attempt. It outlives every route change, which is what lets playback continue while the viewer browses. Distinct from the Play Session, which owns the *lifecycle*; the stage owns the *element* and the chrome around it.
+
+**Presentation** — How the Playback Stage is currently shown: **full screen** (the player route) or **docked** (everywhere else). Derived from the URL rather than stored, so browser Back and Forward move the player like any other navigation. Changing presentation swaps chrome only — never the video element, which would restart the stream.
+
+**Mini Player** — The docked presentation's chrome: a small corner player with the title, play/pause, progress, expand and close. It shares one video element and one Play Session with the full-screen chrome; it is a second face of the same playback, not a second player.

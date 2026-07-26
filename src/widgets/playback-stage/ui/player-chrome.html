@@ -1,39 +1,41 @@
+<!--
+  Overlays the stage's video (which owns the play/pause click). The bare
+  container lets pointer events through to the video; the bars take them back.
+-->
 <div
   #container
   tabindex="-1"
-  class="fixed inset-0 z-50 bg-black outline-none"
+  class="pointer-events-none absolute inset-0 outline-none"
   [class.cursor-none]="!controlsVisible()"
   (mousemove)="poke()"
 >
-  <video #video class="h-full w-full" autoplay crossorigin="anonymous" (click)="togglePlay()">
-    @for (sub of session.activeSubtitle(); track sub.url) {
-      <track kind="subtitles" [src]="sub.url" [label]="sub.label" default />
-    }
-  </video>
-
-  @if (session.loading()) {
-    <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+  @if (session().loading()) {
+    <div class="absolute inset-0 flex items-center justify-center">
       <div class="h-12 w-12 animate-spin rounded-full border-2 border-border border-t-accent"></div>
     </div>
   }
 
-  @if (upNext.state(); as upNextState) {
-    <jf-up-next-card
-      [episode]="upNextState.episode"
-      [mode]="upNextState.mode"
-      [secondsLeft]="upNextState.secondsLeft"
-      (playNow)="upNext.playNow()"
-      (cancelled)="upNext.cancel()"
-    />
+  @if (upNext().state(); as upNextState) {
+    <div class="pointer-events-auto">
+      <jf-up-next-card
+        [episode]="upNextState.episode"
+        [mode]="upNextState.mode"
+        [secondsLeft]="upNextState.secondsLeft"
+        (playNow)="upNext().playNow()"
+        (cancelled)="upNext().cancel()"
+      />
+    </div>
   }
 
-  @if (session.error()) {
-    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4">
+  @if (session().error()) {
+    <div
+      class="pointer-events-auto absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black"
+    >
       <p class="text-danger">Playback failed.</p>
       <button
         type="button"
         class="rounded-lg border border-border px-4 py-2 text-sm"
-        (click)="goBack()"
+        (click)="close()"
       >
         Go back
       </button>
@@ -42,16 +44,17 @@
 
   <!-- Top bar -->
   <div
-    class="absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 to-transparent px-6 py-4 transition-opacity"
+    class="pointer-events-auto absolute inset-x-0 top-0 bg-gradient-to-b from-black/80 to-transparent px-6 py-4 transition-opacity"
     [class.opacity-0]="!controlsVisible()"
     [class.pointer-events-none]="!controlsVisible()"
   >
     <div class="flex items-center gap-4">
       <button
         type="button"
-        class="text-text-muted cursor-pointer transition-colors hover:text-text"
-        (click)="goBack()"
-        title="Back"
+        class="cursor-pointer text-text-muted transition-colors hover:text-text"
+        (click)="minimize()"
+        aria-label="Minimize to mini player"
+        title="Minimize"
       >
         <svg
           width="24"
@@ -60,6 +63,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          aria-hidden="true"
         >
           <path d="M19 12H5m7-7-7 7 7 7" />
         </svg>
@@ -71,21 +75,40 @@
         }
       </div>
       <span class="ml-auto rounded border border-border px-1.5 py-0.5 text-xs text-text-faint">
-        {{ session.method() }}
+        {{ session().method() }}
       </span>
+      <button
+        type="button"
+        class="cursor-pointer text-text-muted transition-colors hover:text-text"
+        (click)="close()"
+        aria-label="Stop playback"
+        title="Stop"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   </div>
 
   <!-- Bottom controls -->
   <div
-    class="absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/90 to-transparent px-6 pt-10 pb-4 transition-opacity"
+    class="pointer-events-auto absolute inset-x-0 bottom-0 space-y-2 bg-gradient-to-t from-black/90 to-transparent px-6 pt-10 pb-4 transition-opacity"
     [class.opacity-0]="!controlsVisible()"
     [class.pointer-events-none]="!controlsVisible()"
   >
     <jf-seek-bar
-      [position]="session.position()"
-      [duration]="session.duration()"
-      [chapters]="session.chapters()"
+      [position]="session().position()"
+      [duration]="session().duration()"
+      [chapters]="session().chapters()"
       (seekTo)="onSeek($event)"
     />
     <div class="flex items-center gap-4">
@@ -93,8 +116,8 @@
         <button
           type="button"
           class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
-          [disabled]="!neighbors.previous()"
-          (click)="hopTo(neighbors.previous())"
+          [disabled]="!neighbors().previous()"
+          (click)="hopTo(neighbors().previous())"
           [attr.aria-label]="previousLabel()"
           [title]="previousLabel()"
         >
@@ -108,14 +131,15 @@
         type="button"
         class="transition-colors hover:text-accent"
         (click)="togglePlay()"
-        [title]="session.playing() ? 'Pause' : 'Play'"
+        [attr.aria-label]="session().playing() ? 'Pause' : 'Play'"
+        [title]="session().playing() ? 'Pause' : 'Play'"
       >
-        @if (session.playing()) {
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+        @if (session().playing()) {
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
           </svg>
         } @else {
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M8 5v14l11-7z" />
           </svg>
         }
@@ -125,8 +149,8 @@
         <button
           type="button"
           class="transition-colors hover:text-accent disabled:opacity-40 disabled:hover:text-current"
-          [disabled]="!neighbors.next()"
-          (click)="hopTo(neighbors.next())"
+          [disabled]="!neighbors().next()"
+          (click)="hopTo(neighbors().next())"
           [attr.aria-label]="nextLabel()"
           [title]="nextLabel()"
         >
@@ -137,7 +161,7 @@
       }
 
       <span class="text-sm tabular-nums text-text-muted">
-        {{ clock(session.position()) }} / {{ clock(session.duration()) }}
+        {{ clock(session().position()) }} / {{ clock(session().duration()) }}
       </span>
 
       <span class="flex-1"></span>
@@ -146,42 +170,45 @@
         <span class="hidden max-w-80 truncate text-sm text-text-muted lg:block">{{ hint }}</span>
       }
 
-      @if (session.qualityOptions().length) {
+      @if (session().qualityOptions().length) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-          [value]="session.selectedQuality() ?? ''"
+          [value]="session().selectedQuality() ?? ''"
           (change)="onQualityChange($event)"
+          aria-label="Quality"
           title="Quality"
         >
           <option value="">Auto</option>
-          @for (quality of session.qualityOptions(); track quality.bitrate) {
+          @for (quality of session().qualityOptions(); track quality.bitrate) {
             <option [value]="quality.bitrate">{{ quality.label }}</option>
           }
         </select>
       }
 
-      @if (session.audioTracks().length > 1) {
+      @if (session().audioTracks().length > 1) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-          [value]="session.selectedAudio()"
+          [value]="session().selectedAudio()"
           (change)="onAudioChange($event)"
+          aria-label="Audio track"
           title="Audio track"
         >
-          @for (track of session.audioTracks(); track track.index) {
+          @for (track of session().audioTracks(); track track.index) {
             <option [value]="track.index">{{ track.label }}</option>
           }
         </select>
       }
 
-      @if (session.subtitleTracks().length) {
+      @if (session().subtitleTracks().length) {
         <select
           class="max-w-44 rounded border border-border bg-surface px-2 py-1 text-xs"
-          [value]="session.selectedSubtitle() ?? ''"
+          [value]="session().selectedSubtitle() ?? ''"
           (change)="onSubtitleChange($event)"
+          aria-label="Subtitles"
           title="Subtitles"
         >
           <option value="">Subtitles off</option>
-          @for (track of session.subtitleTracks(); track track.index) {
+          @for (track of session().subtitleTracks(); track track.index) {
             <option [value]="track.index">{{ track.label }}</option>
           }
         </select>
@@ -193,8 +220,9 @@
         min="0"
         max="1"
         step="0.05"
-        [value]="session.volume()"
+        [value]="session().volume()"
         (input)="onVolume($event)"
+        aria-label="Volume"
         title="Volume"
       />
 
@@ -202,6 +230,7 @@
         type="button"
         class="transition-colors hover:text-accent"
         (click)="toggleFullscreen()"
+        aria-label="Fullscreen"
         title="Fullscreen"
       >
         <svg
@@ -211,6 +240,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          aria-hidden="true"
         >
           <path
             d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"

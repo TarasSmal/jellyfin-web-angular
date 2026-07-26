@@ -1,0 +1,30 @@
+<!--
+  The <video> is declared here, outside every @if: swapping the chrome below
+  must never re-create it, or the stream restarts and a second server session
+  opens. Presentation is a class swap on this wrapper — nothing moves.
+-->
+<div #stage [class]="stageClass()">
+  <video
+    #video
+    class="h-full w-full"
+    autoplay
+    playsinline
+    crossorigin="anonymous"
+    (click)="onVideoClick()"
+  >
+    @for (sub of session.activeSubtitle(); track sub.url) {
+      <track kind="subtitles" [src]="sub.url" [label]="sub.label" default />
+    }
+  </video>
+
+  @if (fullscreen()) {
+    <jf-player-chrome
+      [session]="session"
+      [neighbors]="neighbors"
+      [upNext]="upNext"
+      (fullscreenToggled)="requestFullscreen()"
+    />
+  } @else {
+    <jf-mini-player [session]="session" />
+  }
+</div>

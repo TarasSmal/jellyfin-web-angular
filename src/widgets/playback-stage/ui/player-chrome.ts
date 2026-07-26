@@ -6,94 +6,78 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
-import { Location } from '@angular/common';
-import { Router } from '@angular/router';
-import { createEpisodeNeighbors, createPlaySession } from '@features/play-session';
+import { EpisodeNeighbors, PlaySession } from '@features/play-session';
+import { PlaybackController } from '@features/playback-controller';
 import { cardSubtitle } from '@entities/item';
 import { BaseItemDto } from '@shared/api';
 import { formatClock } from '@shared/lib/clock';
-import { createArtworkWarmup } from '../model/artwork-warmup';
 import { nextEpisodeHint } from '../model/next-episode-hint';
-import { createUpNextPolicy } from '../model/up-next-policy';
+import { UpNextPolicy } from '../model/up-next-policy';
 import { SeekBar } from './seek-bar';
 import { UpNextCard } from './up-next-card';
 
 const CONTROLS_TIMEOUT_MS = 3_000;
 
 /**
- * Thin host for a Play Session: renders the module's signals and forwards user
- * gestures as commands. It owns only chrome — controls visibility, fullscreen,
- * keyboard, and the ended-navigates-back policy — never playback state.
+ * Full-screen chrome over the Playback Stage's video: renders the session's
+ * signals and forwards gestures as commands. It owns only chrome — controls
+ * visibility, keyboard, the fullscreen request — never playback state. It
+ * exists only while the player route is active, which is precisely what keeps
+ * its document-level shortcuts out of the rest of the app.
  */
 @Component({
-  selector: 'jf-player-page',
-  templateUrl: './player-page.html',
+  selector: 'jf-player-chrome',
+  templateUrl: './player-chrome.html',
   imports: [SeekBar, UpNextCard],
   host: {
     '(document:keydown)': 'onKey($event)',
   },
 })
-export class PlayerPage {
-  private readonly location = inject(Location);
-  private readonly router = inject(Router);
+export class PlayerChrome {
+  readonly session = input.required<PlaySession>();
+  readonly neighbors = input.required<EpisodeNeighbors>();
+  readonly upNext = input.required<UpNextPolicy>();
+
+  /** The stage owns the element browser fullscreen must target. */
+  readonly fullscreenToggled = output<void>();
+
+  private readonly playback = inject(PlaybackController);
   private readonly destroyRef = inject(DestroyRef);
 
-  /** Route param via withComponentInputBinding. */
-  readonly id = input.required<string>();
-
-  private readonly videoRef = viewChild<ElementRef<HTMLVideoElement>>('video');
   private readonly containerRef = viewChild.required<ElementRef<HTMLDivElement>>('container');
-
-  protected readonly session = createPlaySession(
-    () => this.id(),
-    () => this.videoRef()?.nativeElement ?? null,
-  );
-
-  protected readonly neighbors = createEpisodeNeighbors(() => this.session.item());
-
-  /** Ending policy: Up Next countdown for episodes, exit-as-before otherwise. */
-  protected readonly upNext = createUpNextPolicy({
-    ended: () => this.session.ended(),
-    item: () => this.session.item(),
-    next: () => this.neighbors.next(),
-    neighborsLoading: () => this.neighbors.loading(),
-    advance: (episode) => this.toNeighbor(episode),
-    exit: () => this.goBack(),
-  });
 
   protected readonly controlsVisible = signal(true);
   private controlsTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected readonly isEpisode = computed(() => this.session.item()?.Type === 'Episode');
+  protected readonly isEpisode = computed(() => this.session().item()?.Type === 'Episode');
   protected readonly previousLabel = computed(() =>
-    describeNeighbor('Previous episode', this.neighbors.previous()),
+    describeNeighbor('Previous episode', this.neighbors().previous()),
   );
   protected readonly nextLabel = computed(() =>
-    describeNeighbor('Next episode', this.neighbors.next()),
+    describeNeighbor('Next episode', this.neighbors().next()),
   );
-  protected readonly nextHint = computed(() => nextEpisodeHint(this.neighbors.next()));
+  protected readonly nextHint = computed(() => nextEpisodeHint(this.neighbors().next()));
 
   protected readonly title = computed(() => {
-    const it = this.session.item();
+    const it = this.session().item();
     if (!it) return '';
     return it.Type === 'Episode' && it.SeriesName ? it.SeriesName : it.Name;
   });
   protected readonly subtitleLine = computed(() => {
-    const it = this.session.item();
+    const it = this.session().item();
     if (!it || it.Type !== 'Episode') return null;
     return cardSubtitle(it);
   });
 
   constructor() {
-    // The Up Next card's artwork is already cached by the time the card shows.
-    createArtworkWarmup(() => this.neighbors.next());
     // Return focus to the player container when the Up Next card dismisses.
     let hadCard = false;
     effect(() => {
-      const hasCard = this.upNext.state() !== null;
+      const hasCard = this.upNext().state() !== null;
       if (hadCard && !hasCard) this.containerRef().nativeElement.focus();
       hadCard = hasCard;
     });
@@ -106,104 +90,99 @@ export class PlayerPage {
   // Every deliberate gesture is also proof of life for the still-watching guard.
 
   protected togglePlay(): void {
-    this.upNext.noteUserActivity();
+    this.upNext().noteUserActivity();
     // The session is dead while the Up Next card is up; a stray Space or video
     // click must not restart the finished episode.
-    if (this.upNext.state()) return;
-    this.session.togglePlay();
+    if (this.upNext().state()) return;
+    this.session().togglePlay();
   }
 
   protected onSeek(seconds: number): void {
-    this.upNext.noteUserActivity();
-    this.session.seek(seconds);
+    this.upNext().noteUserActivity();
+    this.session().seek(seconds);
     this.poke();
   }
 
   protected onVolume(event: Event): void {
-    this.upNext.noteUserActivity();
-    this.session.setVolume(Number((event.target as HTMLInputElement).value));
+    this.upNext().noteUserActivity();
+    this.session().setVolume(Number((event.target as HTMLInputElement).value));
   }
 
   protected onAudioChange(event: Event): void {
-    this.upNext.noteUserActivity();
-    this.session.selectAudio(Number((event.target as HTMLSelectElement).value));
+    this.upNext().noteUserActivity();
+    this.session().selectAudio(Number((event.target as HTMLSelectElement).value));
   }
 
   protected onSubtitleChange(event: Event): void {
-    this.upNext.noteUserActivity();
+    this.upNext().noteUserActivity();
     const raw = (event.target as HTMLSelectElement).value;
-    this.session.selectSubtitle(raw === '' ? null : Number(raw));
+    this.session().selectSubtitle(raw === '' ? null : Number(raw));
   }
 
   protected onQualityChange(event: Event): void {
-    this.upNext.noteUserActivity();
+    this.upNext().noteUserActivity();
     const raw = (event.target as HTMLSelectElement).value;
-    this.session.selectQuality(raw === '' ? null : Number(raw));
-  }
-
-  /**
-   * Episode-to-episode hops replace the history entry so browser Back always
-   * exits the player to the page it was opened from.
-   */
-  protected toNeighbor(target: BaseItemDto | undefined): void {
-    // Also the Up Next policy's advance path — must NOT count as user
-    // activity, or every auto-advance would reset the still-watching guard.
-    if (!target) return;
-    void this.router.navigate(['/player', target.Id], { replaceUrl: true });
+    this.session().selectQuality(raw === '' ? null : Number(raw));
   }
 
   /** Chrome-button hop: a deliberate gesture, unlike a policy auto-advance. */
   protected hopTo(target: BaseItemDto | undefined): void {
-    this.upNext.noteUserActivity();
-    this.toNeighbor(target);
+    this.upNext().noteUserActivity();
+    if (target) this.playback.play(target.Id);
   }
 
   // --- host chrome ---
 
   protected toggleFullscreen(): void {
-    this.upNext.noteUserActivity();
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void this.containerRef().nativeElement.requestFullscreen();
+    this.upNext().noteUserActivity();
+    this.fullscreenToggled.emit();
   }
 
-  protected goBack(): void {
-    this.location.back();
+  /** Leave the player route; playback continues in the dock. */
+  protected minimize(): void {
+    this.playback.dock();
+  }
+
+  /** End playback outright. */
+  protected close(): void {
+    this.playback.close();
   }
 
   protected onKey(event: KeyboardEvent): void {
     if (event.target instanceof HTMLSelectElement || event.target instanceof HTMLInputElement)
       return;
     let handled = true;
+    const session = this.session();
     switch (event.key) {
       case ' ':
         event.preventDefault();
         this.togglePlay();
         break;
       case 'Escape':
-        this.upNext.cancel();
+        this.upNext().cancel();
         break;
       case 'ArrowLeft':
-        this.session.seek(Math.max(0, this.session.position() - 10));
+        session.seek(Math.max(0, session.position() - 10));
         break;
       case 'ArrowRight':
-        this.session.seek(Math.min(this.session.duration() || Infinity, this.session.position() + 10));
+        session.seek(Math.min(session.duration() || Infinity, session.position() + 10));
         break;
       case 'f':
         this.toggleFullscreen();
         break;
       case 'm':
-        this.session.toggleMute();
+        session.toggleMute();
         break;
       case 'N':
-        if (event.shiftKey) this.toNeighbor(this.neighbors.next());
+        if (event.shiftKey) this.hopTo(this.neighbors().next());
         break;
       case 'P':
-        if (event.shiftKey) this.toNeighbor(this.neighbors.previous());
+        if (event.shiftKey) this.hopTo(this.neighbors().previous());
         break;
       default:
         handled = false;
     }
-    if (handled) this.upNext.noteUserActivity();
+    if (handled) this.upNext().noteUserActivity();
     this.poke();
   }
 
@@ -215,7 +194,7 @@ export class PlayerPage {
   private pokeTimer(): void {
     if (this.controlsTimer) clearTimeout(this.controlsTimer);
     this.controlsTimer = setTimeout(() => {
-      if (this.session.playing()) this.controlsVisible.set(false);
+      if (this.session().playing()) this.controlsVisible.set(false);
     }, CONTROLS_TIMEOUT_MS);
   }
 

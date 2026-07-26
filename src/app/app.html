@@ -1,2 +1,12 @@
 <router-outlet />
+
+<!--
+  Deferred, not lazy-per-playback: the stage pulls in the media engine (and
+  hls.js), which must stay out of the initial bundle. Once fetched it stays —
+  the outlet's own @if is what mounts and unmounts a playback.
+-->
+@defer (when playback.active()) {
+  <jf-playback-outlet />
+}
+
 <jf-toast-container />

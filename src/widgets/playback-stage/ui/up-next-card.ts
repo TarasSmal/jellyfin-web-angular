@@ -36,9 +36,7 @@ export class UpNextCard {
   private readonly focusTarget = viewChild.required<ElementRef<HTMLButtonElement>>('focusTarget');
 
   protected readonly thumbUrl = computed(() => itemThumbUrl(this.config, this.episode()));
-  protected readonly line = computed(
-    () => cardSubtitle(this.episode()) ?? this.episode().Name,
-  );
+  protected readonly line = computed(() => cardSubtitle(this.episode()) ?? this.episode().Name);
   protected readonly announcement = signal('');
 
   constructor() {
