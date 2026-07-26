@@ -58,6 +58,8 @@ export interface LocalizationOption {
 export interface CultureDto {
   DisplayName: string;
   TwoLetterISOLanguageName: string;
+  /** What UserConfiguration language preferences are keyed by; absent for a few cultures. */
+  ThreeLetterISOLanguageName?: string;
 }
 
 /** /Localization/Countries. */
@@ -90,6 +92,34 @@ export interface ServerConfiguration {
   [key: string]: unknown;
 }
 
+/** How the server picks a subtitle track when playback starts. */
+export type SubtitlePlaybackMode = 'Default' | 'Always' | 'OnlyForced' | 'None' | 'Smart';
+
+/**
+ * A user's own preferences (POST /Users/Configuration replaces the whole
+ * object). The server rejects unknown properties, so this interface carries
+ * no index signature — edits must round-trip exactly what was fetched.
+ */
+export interface UserConfiguration {
+  /** Three-letter ISO code, as in CultureDto.ThreeLetterISOLanguageName. */
+  AudioLanguagePreference?: string | null;
+  PlayDefaultAudioTrack?: boolean;
+  SubtitleLanguagePreference?: string | null;
+  SubtitleMode?: SubtitlePlaybackMode;
+  DisplayMissingEpisodes?: boolean;
+  DisplayCollectionsView?: boolean;
+  HidePlayedInLatest?: boolean;
+  RememberAudioSelections?: boolean;
+  RememberSubtitleSelections?: boolean;
+  EnableNextEpisodeAutoPlay?: boolean;
+  EnableLocalPassword?: boolean;
+  GroupedFolders?: string[];
+  OrderedViews?: string[];
+  LatestItemsExcludes?: string[];
+  MyMediaExcludes?: string[];
+  CastReceiverId?: string | null;
+}
+
 export interface UserDto {
   Id: string;
   Name: string;
@@ -99,6 +129,7 @@ export interface UserDto {
   LastLoginDate?: string;
   LastActivityDate?: string;
   Policy?: UserPolicy;
+  Configuration?: UserConfiguration;
 }
 
 export interface AuthenticationResult {

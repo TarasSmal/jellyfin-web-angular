@@ -39,6 +39,10 @@ export const routes: Routes = [
         loadComponent: () => import('@pages/search').then((m) => m.SearchPage),
       },
       {
+        path: 'profile',
+        loadComponent: () => import('@pages/profile').then((m) => m.ProfilePage),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         loadComponent: () => import('@widgets/admin-shell').then((m) => m.AdminShell),

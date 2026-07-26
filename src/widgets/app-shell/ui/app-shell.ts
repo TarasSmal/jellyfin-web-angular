@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { ApiConfig, ItemsResult, userViewsRequest } from '@shared/api';
+import { ApiConfig, ItemsResult, userImageUrl, userViewsRequest } from '@shared/api';
 import { AuthService } from '@features/auth';
 import { SessionStore } from '@entities/user';
 
@@ -24,6 +24,15 @@ export class AppShell {
         .value()
         ?.Items.filter((v) => v.CollectionType === 'movies' || v.CollectionType === 'tvshows') ??
       [],
+  );
+
+  /** Avatar for the profile link; falls back to the first letter of the name. */
+  protected readonly avatarUrl = computed(() => {
+    const user = this.session.user();
+    return user ? userImageUrl(this.config, user) : null;
+  });
+  protected readonly initial = computed(
+    () => this.session.user()?.Name.charAt(0).toUpperCase() ?? '',
   );
 
   protected readonly searchTerm = signal('');

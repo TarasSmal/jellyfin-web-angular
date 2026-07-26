@@ -43,3 +43,5 @@ Glossary of the language used in this project. Terms are added as they crystalli
 **Studio Badge** — The small studio/network logo shown in an item card's top-right corner (episodes show their series' network). Absent when the server has no logo for that studio.
 
 **Live Resource** — A server read that stays current by socket push instead of polling. Two flavours: a *snapshot feed* replaces the whole value on every push (sessions, scheduled tasks); an *invalidation event* only marks the read stale so it refetches (library changes). Feeds and events carry domain names; the wire message names stay inside `shared/api`.
+
+**Preferences** — A user's own settings for how playback and libraries behave for them: language preferences, subtitle mode, autoplay, what the library rails show. Set by the account holder on their profile page. Distinct from **Policy**, the permissions an administrator grants an account (admin rights, library access, transcoding, session limits) — an account holder can change their Preferences but never their Policy.
