@@ -3,10 +3,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@features/auth';
 import { ApiConfig } from '@shared/api';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 
 @Component({
   selector: 'jf-login-page',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, PasswordToggle],
   templateUrl: './login-page.html',
 })
 export class LoginPage {

@@ -3,13 +3,15 @@
 <form class="mt-4" (submit)="submit($event)">
   <label class="block text-sm">
     <span class="mb-1 block text-text-muted">{{ options.label }}</span>
-    <input
-      [type]="options.inputType ?? 'text'"
-      autocomplete="off"
-      class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
-      [value]="value()"
-      (input)="onInput($event)"
-    />
+    <div class="relative">
+      <input
+        [jfPasswordToggle]="options.inputType === 'password'"
+        autocomplete="off"
+        class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+        [value]="value()"
+        (input)="onInput($event)"
+      />
+    </div>
   </label>
   <div class="mt-6 flex justify-end gap-2">
     <button

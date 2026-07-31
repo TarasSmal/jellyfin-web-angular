@@ -92,12 +92,14 @@
           @if (hasPassword()) {
             <label class="text-sm">
               <span class="mb-1 block text-text-muted">Current password</span>
-              <input
-                type="password"
-                autocomplete="current-password"
-                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-                [formField]="passwordForm.current"
-              />
+              <div class="relative">
+                <input
+                  jfPasswordToggle
+                  autocomplete="current-password"
+                  class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
+                  [formField]="passwordForm.current"
+                />
+              </div>
               @if (passwordForm.current().touched() && passwordForm.current().errors().length) {
                 <span class="mt-1 block text-xs text-danger">
                   {{ passwordForm.current().errors()[0].message }}
@@ -107,12 +109,14 @@
           }
           <label class="text-sm">
             <span class="mb-1 block text-text-muted">New password</span>
-            <input
-              type="password"
-              autocomplete="new-password"
-              class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-              [formField]="passwordForm.next"
-            />
+            <div class="relative">
+              <input
+                jfPasswordToggle
+                autocomplete="new-password"
+                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
+                [formField]="passwordForm.next"
+              />
+            </div>
             @if (passwordForm.next().touched() && passwordForm.next().errors().length) {
               <span class="mt-1 block text-xs text-danger">
                 {{ passwordForm.next().errors()[0].message }}
@@ -121,12 +125,14 @@
           </label>
           <label class="text-sm">
             <span class="mb-1 block text-text-muted">Repeat new password</span>
-            <input
-              type="password"
-              autocomplete="new-password"
-              class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
-              [formField]="passwordForm.confirm"
-            />
+            <div class="relative">
+              <input
+                jfPasswordToggle
+                autocomplete="new-password"
+                class="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 focus:border-accent focus:outline-none"
+                [formField]="passwordForm.confirm"
+              />
+            </div>
             @if (passwordForm.confirm().touched() && passwordForm.confirm().errors().length) {
               <span class="mt-1 block text-xs text-danger">
                 {{ passwordForm.confirm().errors()[0].message }}

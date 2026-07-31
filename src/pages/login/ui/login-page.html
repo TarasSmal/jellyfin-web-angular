@@ -19,15 +19,17 @@
         [(ngModel)]="username"
         [disabled]="busy()"
       />
-      <input
-        type="password"
-        name="password"
-        autocomplete="current-password"
-        placeholder="Password"
-        class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
-        [(ngModel)]="password"
-        [disabled]="busy()"
-      />
+      <div class="relative">
+        <input
+          jfPasswordToggle
+          name="password"
+          autocomplete="current-password"
+          placeholder="Password"
+          class="w-full rounded-lg border border-border bg-surface px-4 py-3 text-text placeholder:text-text-faint focus:border-accent focus:outline-none"
+          [(ngModel)]="password"
+          [disabled]="busy()"
+        />
+      </div>
     </div>
 
     @if (error()) {

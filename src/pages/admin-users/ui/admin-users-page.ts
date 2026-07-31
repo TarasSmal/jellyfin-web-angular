@@ -5,11 +5,12 @@ import { FormField, form, required } from '@angular/forms/signals';
 import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { AdminUsersApi, ApiConfig, UserDto, liveResource, usersRequest } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 import { PromptService } from '@shared/ui/prompt-dialog';
 
 @Component({
   selector: 'jf-admin-users-page',
-  imports: [DatePipe, RouterLink, FormField, BrnDialogImports],
+  imports: [DatePipe, RouterLink, FormField, BrnDialogImports, PasswordToggle],
   templateUrl: './admin-users-page.html',
 })
 export class AdminUsersPage {

@@ -32,12 +32,14 @@
           </label>
           <label class="block text-sm">
             <span class="mb-1 block text-text-muted">Password</span>
-            <input
-              type="password"
-              [formField]="userForm.password"
-              autocomplete="new-password"
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
-            />
+            <div class="relative">
+              <input
+                jfPasswordToggle
+                [formField]="userForm.password"
+                autocomplete="new-password"
+                class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+              />
+            </div>
           </label>
           <div class="flex justify-end gap-2 pt-2">
             <button
