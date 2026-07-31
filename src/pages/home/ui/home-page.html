@@ -1,36 +1,40 @@
-<main class="pb-16">
-  @if (featured().length) {
-    <jf-hero-billboard [items]="featured()" />
-  } @else if (featuredLoading()) {
-    <div
-      class="aspect-video max-h-[92dvh] min-h-96 w-full animate-pulse bg-surface min-[1990px]:aspect-[5/2]"
-    ></div>
-  }
+@if (emptyReason(); as reason) {
+  <jf-home-empty-state [reason]="reason" [isAdmin]="isAdmin()" [libraryNames]="libraryNames()" />
+} @else {
+  <main class="pb-16">
+    @if (featured().length) {
+      <jf-hero-billboard [items]="featured()" />
+    } @else if (featuredLoading()) {
+      <div
+        class="aspect-video max-h-[92dvh] min-h-96 w-full animate-pulse bg-surface min-[1990px]:aspect-[5/2]"
+      ></div>
+    }
 
-  <div class="relative z-10 -mt-8 space-y-10">
-    <jf-media-rail
-      title="Continue Watching"
-      shape="thumb"
-      linkTarget="player"
-      [items]="resume.value()?.Items"
-      [loading]="resume.isLoading()"
-    />
-    <jf-media-rail
-      title="Next Up"
-      shape="thumb"
-      linkTarget="player"
-      [items]="nextUp.value()?.Items"
-      [loading]="nextUp.isLoading()"
-    />
-    <jf-media-rail
-      title="Latest Movies"
-      [items]="latestMovies.value()"
-      [loading]="latestMovies.isLoading()"
-    />
-    <jf-media-rail
-      title="Latest Shows"
-      [items]="latestShows.value()"
-      [loading]="latestShows.isLoading()"
-    />
-  </div>
-</main>
+    <div class="relative z-10 -mt-8 space-y-10">
+      <jf-media-rail
+        title="Continue Watching"
+        shape="thumb"
+        linkTarget="player"
+        [items]="resume.value()?.Items"
+        [loading]="resume.isLoading()"
+      />
+      <jf-media-rail
+        title="Next Up"
+        shape="thumb"
+        linkTarget="player"
+        [items]="nextUp.value()?.Items"
+        [loading]="nextUp.isLoading()"
+      />
+      <jf-media-rail
+        title="Latest Movies"
+        [items]="latestMovies.value()"
+        [loading]="latestMovies.isLoading()"
+      />
+      <jf-media-rail
+        title="Latest Shows"
+        [items]="latestShows.value()"
+        [loading]="latestShows.isLoading()"
+      />
+    </div>
+  </main>
+}
