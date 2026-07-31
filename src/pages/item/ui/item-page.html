@@ -160,6 +160,17 @@
         </section>
       }
     </div>
+
+    <!-- More like this — the rail brings its own horizontal padding -->
+    @if (similar.isLoading() || similar.value()?.Items?.length) {
+      <div class="mt-10">
+        <jf-media-rail
+          title="More Like This"
+          [items]="similar.value()?.Items"
+          [loading]="similar.isLoading()"
+        />
+      </div>
+    }
   </main>
 } @else {
   <main class="min-h-dvh">

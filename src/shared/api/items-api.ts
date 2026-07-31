@@ -55,6 +55,22 @@ export function itemRequest(config: ApiConfig, itemId: string): Req {
   };
 }
 
+/** Items the server considers similar to one item — the "More Like This" rail. */
+export function similarItemsRequest(config: ApiConfig, itemId: string, limit = 12): Req {
+  const userId = config.userId();
+  if (!userId) return undefined;
+  return {
+    url: config.url(`/Items/${itemId}/Similar`),
+    params: {
+      userId,
+      limit,
+      fields: ITEM_FIELDS,
+      enableImageTypes: IMAGE_TYPES,
+      imageTypeLimit: 1,
+    },
+  };
+}
+
 /** Seasons of a series. */
 export function seasonsRequest(config: ApiConfig, seriesId: string): Req {
   const userId = config.userId();

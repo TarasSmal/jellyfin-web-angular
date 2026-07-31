@@ -9,6 +9,7 @@ import {
   episodesRequest,
   itemRequest,
   seasonsRequest,
+  similarItemsRequest,
 } from '@shared/api';
 import {
   itemBackdropHash,
@@ -20,12 +21,13 @@ import {
 import { FavoriteButton } from '@features/toggle-favorite';
 import { WatchedButton } from '@features/mark-watched';
 import { EpisodeList } from '@widgets/episode-list';
+import { MediaRail } from '@widgets/media-rail';
 import { BlurImg } from '@shared/ui/blur-img';
 import { formatRuntime } from '@shared/lib/ticks';
 
 @Component({
   selector: 'jf-item-page',
-  imports: [RouterLink, FavoriteButton, WatchedButton, EpisodeList, BlurImg],
+  imports: [RouterLink, FavoriteButton, WatchedButton, EpisodeList, MediaRail, BlurImg],
   templateUrl: './item-page.html',
 })
 export class ItemPage {
@@ -49,6 +51,14 @@ export class ItemPage {
     const seasonId = this.selectedSeasonId();
     return it?.Type === 'Series' && seasonId
       ? episodesRequest(this.config, it.Id, seasonId)
+      : undefined;
+  });
+
+  /** The Similar endpoint only has meaning for top-level titles, not seasons/episodes. */
+  protected readonly similar = httpResource<ItemsResult>(() => {
+    const it = this.item.value();
+    return it?.Type === 'Movie' || it?.Type === 'Series'
+      ? similarItemsRequest(this.config, it.Id)
       : undefined;
   });
 
