@@ -7,6 +7,7 @@ import {
   BrnDialogTitle,
   injectBrnDialogContext,
 } from '@spartan-ng/brain/dialog';
+import { PasswordToggle } from './password-toggle';
 
 export interface PromptOptions {
   title: string;
@@ -21,7 +22,7 @@ export interface PromptOptions {
 
 @Component({
   selector: 'jf-prompt-dialog',
-  imports: [BrnDialogTitle, BrnDialogDescription],
+  imports: [BrnDialogTitle, BrnDialogDescription, PasswordToggle],
   host: {
     class:
       'block w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl',

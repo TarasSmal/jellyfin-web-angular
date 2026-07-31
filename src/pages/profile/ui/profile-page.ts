@@ -15,6 +15,7 @@ import {
   injectMutation,
   userImageUrl,
 } from '@shared/api';
+import { PasswordToggle } from '@shared/ui/password-toggle';
 import { ToastService } from '@shared/ui/toast';
 
 /** Keys of UserConfiguration whose value is a plain flag. */
@@ -73,7 +74,7 @@ const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 @Component({
   selector: 'jf-profile-page',
-  imports: [FormField],
+  imports: [FormField, PasswordToggle],
   templateUrl: './profile-page.html',
 })
 export class ProfilePage {
@@ -194,7 +195,10 @@ export class ProfilePage {
   protected async savePassword(event: Event): Promise<void> {
     event.preventDefault();
     const user = this.me.value();
-    if (!user || !this.passwordForm().valid() || this.savingPassword()) return;
+    if (!user || !this.passwordForm().valid() || this.savingPassword()) {
+      return;
+    }
+
     this.savingPassword.set(true);
     const { current, next } = this.passwordModel();
     const ok = await this.run(
@@ -202,10 +206,13 @@ export class ProfilePage {
       'Password changed',
       'Password not changed — check your current password',
     );
+
     if (ok) {
       this.passwordModel.set({ current: '', next: '', confirm: '' });
       this.me.reload();
     }
+
+    this.passwordForm().reset();
     this.savingPassword.set(false);
   }
 
