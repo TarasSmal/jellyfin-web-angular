@@ -12,15 +12,6 @@
         {{ view.Name }}
       </a>
     }
-    @if (session.isAdmin()) {
-      <a
-        routerLink="/admin"
-        routerLinkActive="text-text"
-        class="shrink-0 text-sm font-medium text-text-muted transition-colors hover:text-text"
-      >
-        Admin
-      </a>
-    }
     <span class="flex-1"></span>
     <input
       type="search"
@@ -29,10 +20,12 @@
       [value]="searchTerm()"
       (input)="onSearch($event)"
     />
-    <a
-      routerLink="/profile"
-      routerLinkActive="text-text"
-      class="flex shrink-0 items-center gap-2 text-sm text-text-muted transition-colors hover:text-text"
+    <button
+      type="button"
+      [cdkMenuTriggerFor]="userMenu"
+      [cdkMenuPosition]="menuPosition"
+      [attr.aria-label]="'Account menu for ' + (session.user()?.Name ?? '')"
+      class="flex shrink-0 items-center gap-2 rounded-full text-sm text-text-muted transition-colors hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       @if (avatarUrl(); as src) {
         <img [src]="src" alt="" class="size-7 rounded-full border border-border object-cover" />
@@ -45,15 +38,53 @@
         </span>
       }
       <span class="hidden sm:inline">{{ session.user()?.Name }}</span>
-      <span class="sr-only">Your profile</span>
-    </a>
-    <button
-      type="button"
-      class="text-sm text-text-muted transition-colors hover:text-text"
-      (click)="logout()"
-    >
-      Sign out
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="size-4 shrink-0 transition-transform"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+          clip-rule="evenodd"
+        />
+      </svg>
     </button>
   </nav>
 </header>
+
+<ng-template #userMenu>
+  <div
+    cdkMenu
+    class="w-52 overflow-hidden rounded-xl border border-border bg-surface-raised py-1 shadow-2xl"
+  >
+    <a
+      cdkMenuItem
+      routerLink="/profile"
+      class="block w-full px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-surface hover:text-text focus:bg-surface focus:text-text focus:outline-none"
+    >
+      Profile
+    </a>
+    @if (session.isAdmin()) {
+      <a
+        cdkMenuItem
+        routerLink="/admin"
+        class="block w-full px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-surface hover:text-text focus:bg-surface focus:text-text focus:outline-none"
+      >
+        Admin
+      </a>
+    }
+    <div role="separator" class="my-1 h-px bg-border"></div>
+    <button
+      cdkMenuItem
+      type="button"
+      (cdkMenuItemTriggered)="logout()"
+      class="block w-full px-4 py-2 text-left text-sm text-text-muted transition-colors hover:bg-surface hover:text-text focus:bg-surface focus:text-text focus:outline-none"
+    >
+      Sign out
+    </button>
+  </div>
+</ng-template>
+
 <router-outlet />

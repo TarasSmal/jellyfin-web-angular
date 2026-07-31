@@ -1,5 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
+import { CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
+import type { ConnectedPosition } from '@angular/cdk/overlay';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { ApiConfig, ItemsResult, userImageUrl, userViewsRequest } from '@shared/api';
 import { AuthService } from '@features/auth';
@@ -7,7 +9,7 @@ import { SessionStore } from '@entities/user';
 
 @Component({
   selector: 'jf-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CdkMenu, CdkMenuItem, CdkMenuTrigger],
   templateUrl: './app-shell.html',
 })
 export class AppShell {
@@ -34,6 +36,12 @@ export class AppShell {
   protected readonly initial = computed(
     () => this.session.user()?.Name.charAt(0).toUpperCase() ?? '',
   );
+
+  /** Account menu hangs off the right edge of the trigger, flipping above when cramped. */
+  protected readonly menuPosition: ConnectedPosition[] = [
+    { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+    { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -8 },
+  ];
 
   protected readonly searchTerm = signal('');
   private searchDebounce: ReturnType<typeof setTimeout> | null = null;
