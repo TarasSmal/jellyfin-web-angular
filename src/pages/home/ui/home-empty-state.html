@@ -1,0 +1,81 @@
+<main class="relative min-h-dvh overflow-hidden">
+  <!-- Silhouette of the real home page — hero block plus rails, drained of content. -->
+  <div aria-hidden="true" class="absolute inset-0 select-none">
+    <div class="aspect-video max-h-[70dvh] min-h-80 w-full bg-surface"></div>
+    <div class="-mt-8 space-y-10 px-4 md:px-12">
+      @for (rail of ghostRails; track rail) {
+        <div>
+          <div class="mb-3 h-4 w-40 rounded bg-surface-raised"></div>
+          <div class="flex gap-3 overflow-hidden">
+            @for (card of ghostCards; track card) {
+              <div class="aspect-poster w-32 shrink-0 rounded-lg bg-surface md:w-40"></div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Scrim: darkest at the bottom, where the copy sits. -->
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 bg-gradient-to-t from-bg via-bg/85 to-bg/60 backdrop-blur-sm"
+  ></div>
+
+  <div class="relative flex min-h-dvh items-end px-6 pt-24 pb-16 md:px-12 md:pb-24">
+    <div class="max-w-xl">
+      <p class="text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+        {{ reason() === 'no-libraries' ? 'No libraries yet' : 'Nothing indexed yet' }}
+      </p>
+
+      <h1 class="mt-4 text-4xl font-bold tracking-tight text-balance sm:text-6xl">
+        @if (isAdmin()) {
+          {{
+            reason() === 'no-libraries'
+              ? 'Your wall is empty.'
+              : 'The shelves are up. Now fill them.'
+          }}
+        } @else {
+          Nothing to watch — yet.
+        }
+      </h1>
+
+      <p class="mt-4 text-lg text-text-muted">
+        @if (isAdmin()) {
+          @if (reason() === 'no-libraries') {
+            Point Jellyfin at a folder of movies or shows and this page turns into your home screen.
+          } @else {
+            {{ emptyLibraries() }} came back empty. Check the folder path, then kick off a scan.
+          }
+        } @else {
+          @if (reason() === 'no-libraries') {
+            No libraries have been shared with your account yet. Your server administrator can fix
+            that in a minute.
+          } @else {
+            Your libraries are still being indexed. Check back shortly.
+          }
+        }
+      </p>
+
+      @if (isAdmin()) {
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            routerLink="/admin/libraries"
+            class="rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            {{ reason() === 'no-libraries' ? 'Add a library' : 'Review libraries' }}
+          </a>
+          <a
+            routerLink="/admin"
+            class="rounded-lg border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium backdrop-blur transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            Open dashboard
+          </a>
+        </div>
+        <p class="mt-6 text-sm text-text-faint">
+          Jellyfin reads your files where they are — nothing gets moved or copied.
+        </p>
+      }
+    </div>
+  </div>
+</main>
