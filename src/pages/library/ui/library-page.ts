@@ -28,24 +28,37 @@ export class LibraryPage {
   protected readonly skeletons = Array.from({ length: 12 }, (_, i) => i);
 
   protected readonly library = httpResource<BaseItemDto>(() => itemRequest(this.config, this.id()));
-  private readonly genresResource = httpResource<ItemsResult>(() =>
+  protected readonly genresResource = httpResource<ItemsResult>(() =>
     genresRequest(this.config, this.id()),
   );
   protected readonly genres = computed(() => this.genresResource.value()?.Items ?? []);
+
+  protected readonly failed = computed(
+    () => this.library.error() !== undefined || this.browser.error(),
+  );
+  /** Skeletons cover both legs of a library switch: its metadata, then its first page. */
+  protected readonly pending = computed(() => !this.failed() && this.browser.loading());
 
   constructor() {
     // Start browsing once the library's kind is known — a movies library
     // browses Movie items, a TV library Series (not seasons/episodes).
     effect(() => {
+      const id = this.id();
       const library = this.library.value();
-      if (!library) return;
+      // Navigating to another library reuses this component, so drop the old
+      // library's items right away rather than leaving them on screen until
+      // the new metadata and first page have both landed.
+      if (library?.Id !== id) {
+        this.browser.reset();
+        return;
+      }
       const includeItemTypes =
         library.CollectionType === 'movies'
           ? 'Movie'
           : library.CollectionType === 'tvshows'
             ? 'Series'
             : undefined;
-      this.browser.init(this.id(), includeItemTypes);
+      this.browser.init(id, includeItemTypes);
     });
   }
 
