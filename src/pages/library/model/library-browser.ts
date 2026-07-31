@@ -36,7 +36,8 @@ export class LibraryBrowser {
   readonly params = signal<BrowseParams>(DEFAULT_PARAMS);
   readonly items = signal<BaseItemDto[]>([]);
   readonly total = signal<number | null>(null);
-  readonly loading = signal(false);
+  /** Starts pending: the page always initializes the browser right after construction. */
+  readonly loading = signal(true);
   readonly error = signal<boolean>(false);
   readonly hasMore = computed(() => {
     const total = this.total();
@@ -48,6 +49,22 @@ export class LibraryBrowser {
     this.libraryId = libraryId;
     this.includeItemTypes = includeItemTypes;
     void this.reload();
+  }
+
+  /**
+   * Clears everything and goes back to pending. Called the moment the route
+   * points at another library, so the grid shows skeletons instead of the
+   * previous library's items while the new one is still being resolved.
+   */
+  reset(): void {
+    this.requestSeq++; // orphan anything still in flight
+    this.libraryId = null;
+    this.includeItemTypes = undefined;
+    this.params.set(DEFAULT_PARAMS);
+    this.items.set([]);
+    this.total.set(null);
+    this.error.set(false);
+    this.loading.set(true);
   }
 
   setParams(patch: Partial<BrowseParams>): void {
@@ -68,9 +85,6 @@ export class LibraryBrowser {
 
   private async fetchPage(startIndex: number): Promise<void> {
     if (!this.libraryId) return;
-    const seq = ++this.requestSeq;
-    this.loading.set(true);
-    this.error.set(false);
     const { sortBy, sortOrder, unplayedOnly, genre } = this.params();
     const req = itemsRequest(this.config, {
       parentId: this.libraryId,
@@ -83,6 +97,9 @@ export class LibraryBrowser {
       limit: PAGE_SIZE,
     });
     if (!req) return;
+    const seq = ++this.requestSeq;
+    this.loading.set(true);
+    this.error.set(false);
     try {
       const result = await firstValueFrom(
         this.http.get<ItemsResult>(req.url, {

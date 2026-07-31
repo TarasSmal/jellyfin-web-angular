@@ -1,15 +1,20 @@
 <main class="min-h-dvh px-6 pt-24 pb-16 md:px-12">
   <div class="mb-6 flex flex-wrap items-center gap-3">
-    <h1 class="mr-auto text-2xl font-bold tracking-tight">
-      {{ library.value()?.Name ?? 'Library' }}
-      @if (browser.total() !== null) {
-        <span class="ml-2 text-base font-normal text-text-faint">{{ browser.total() }}</span>
+    <h1 class="mr-auto flex items-center text-2xl font-bold tracking-tight">
+      @if (library.isLoading()) {
+        <span class="my-1 inline-block h-6 w-40 animate-pulse rounded bg-surface"></span>
+      } @else {
+        {{ library.value()?.Name ?? 'Library' }}
+        @if (browser.total() !== null) {
+          <span class="ml-2 text-base font-normal text-text-faint">{{ browser.total() }}</span>
+        }
       }
     </h1>
 
     <select
-      class="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none"
+      class="rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
       [value]="browser.params().sortBy"
+      [disabled]="library.isLoading()"
       (change)="onSortBy($event)"
     >
       @for (opt of sortOptions; track opt.value) {
@@ -19,15 +24,17 @@
 
     <button
       type="button"
-      class="rounded-lg border border-border bg-surface px-3 py-2 text-sm transition-colors hover:text-accent"
+      class="rounded-lg border border-border bg-surface px-3 py-2 text-sm transition-colors hover:text-accent disabled:opacity-50"
+      [disabled]="library.isLoading()"
       (click)="toggleOrder()"
     >
       {{ browser.params().sortOrder === 'Ascending' ? '↑' : '↓' }}
     </button>
 
     <select
-      class="max-w-40 rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none"
+      class="max-w-40 rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
       [value]="browser.params().genre ?? ''"
+      [disabled]="library.isLoading() || genresResource.isLoading()"
       (change)="onGenre($event)"
     >
       <option value="">All genres</option>
@@ -49,24 +56,33 @@
     </button>
   </div>
 
-  @if (browser.error()) {
+  @if (failed()) {
     <p class="py-12 text-center text-danger">Failed to load this library.</p>
   }
 
   <div
     class="grid grid-cols-[repeat(auto-fill,minmax(9rem,1fr))] gap-4 md:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]"
+    [attr.aria-busy]="pending()"
   >
     @for (item of browser.items(); track item.Id) {
       <jf-item-card [item]="item" [fluid]="true" />
     }
-    @if (browser.loading()) {
+    @if (pending()) {
       @for (i of skeletons; track i) {
         <div class="aspect-poster w-full animate-pulse rounded-lg bg-surface"></div>
       }
     }
   </div>
 
-  @if (browser.hasMore() && !browser.loading()) {
+  <p class="sr-only" aria-live="polite">
+    {{ pending() ? 'Loading items…' : browser.items().length + ' items loaded' }}
+  </p>
+
+  @if (!pending() && !failed() && browser.items().length === 0) {
+    <p class="py-12 text-center text-text-faint">Nothing here matches these filters.</p>
+  }
+
+  @if (browser.hasMore() && !pending()) {
     <div class="mt-8 text-center">
       <button
         type="button"
