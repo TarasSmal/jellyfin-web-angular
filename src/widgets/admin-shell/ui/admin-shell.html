@@ -1,5 +1,15 @@
+<!--
+  Opaque strip behind the app bar. The bar itself only paints a gradient that
+  fades to transparent, so admin rows scrolling under the sticky page headers
+  would otherwise show through above them. Sits below the bar (z-40) and above
+  the sticky page header (z-20).
+-->
+<div aria-hidden="true" class="fixed inset-x-0 top-0 z-30 h-16 bg-bg"></div>
+
 <div class="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-24 pb-16 md:flex-row md:px-12">
-  <aside class="w-full shrink-0 md:w-48">
+  <aside
+    class="w-full shrink-0 md:sticky md:top-24 md:max-h-[calc(100vh-7rem)] md:w-48 md:self-start md:overflow-y-auto"
+  >
     <h2 class="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Dashboard</h2>
     <nav
       aria-label="Admin sections"

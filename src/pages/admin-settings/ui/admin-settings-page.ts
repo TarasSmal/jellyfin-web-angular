@@ -13,6 +13,7 @@ import {
   localizationOptionsRequest,
   systemConfigRequest,
 } from '@shared/api';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 interface ConfigToggle {
   key: string;
@@ -86,6 +87,7 @@ const RETENTION_NUMBERS: ConfigNumber[] = [
 
 @Component({
   selector: 'jf-admin-settings-page',
+  imports: [AdminPageHeader],
   templateUrl: './admin-settings-page.html',
 })
 export class AdminSettingsPage {

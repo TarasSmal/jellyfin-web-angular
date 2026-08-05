@@ -4,10 +4,11 @@ import { ApiKeysApi, AuthenticationInfoResult, apiKeysRequest, liveResource } fr
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
 import { ToastService } from '@shared/ui/toast';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-keys-page',
-  imports: [DatePipe],
+  imports: [AdminPageHeader, DatePipe],
   templateUrl: './admin-keys-page.html',
 })
 export class AdminKeysPage {

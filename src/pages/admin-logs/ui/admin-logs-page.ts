@@ -3,10 +3,11 @@ import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { ApiConfig, LogFile, logFileRequest, logFilesRequest } from '@shared/api';
 import { formatBytes } from '@shared/lib/bytes';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-logs-page',
-  imports: [DatePipe],
+  imports: [AdminPageHeader, DatePipe],
   templateUrl: './admin-logs-page.html',
 })
 export class AdminLogsPage {

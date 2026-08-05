@@ -2,12 +2,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { ActivityLogResult, ApiConfig, LogSeverity, activityLogRequest } from '@shared/api';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 const PAGE_SIZE = 25;
 
 @Component({
   selector: 'jf-admin-activity-page',
-  imports: [DatePipe],
+  imports: [AdminPageHeader, DatePipe],
   templateUrl: './admin-activity-page.html',
 })
 export class AdminActivityPage {

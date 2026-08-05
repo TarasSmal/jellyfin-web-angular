@@ -12,6 +12,7 @@ import {
   pluginsRequest,
 } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 /** Plugin ids and package guids differ only in dash/case conventions. */
 function normalizeGuid(guid: string): string {
@@ -20,6 +21,7 @@ function normalizeGuid(guid: string): string {
 
 @Component({
   selector: 'jf-admin-plugins-page',
+  imports: [AdminPageHeader],
   templateUrl: './admin-plugins-page.html',
 })
 export class AdminPluginsPage {

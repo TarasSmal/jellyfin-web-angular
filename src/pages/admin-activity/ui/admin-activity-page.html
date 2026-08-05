@@ -1,15 +1,17 @@
 <main>
-  <h1 class="text-2xl font-bold">Activity</h1>
-  <p class="mt-1 text-sm text-text-muted">What happened on the server, newest first.</p>
+  <jf-admin-page-header>
+    <h1 class="text-2xl font-bold">Activity</h1>
+    <p class="mt-1 text-sm text-text-muted">What happened on the server, newest first.</p>
+  </jf-admin-page-header>
 
   @if (log.value(); as result) {
-    <div class="mt-6 overflow-x-auto rounded-xl border border-border">
+    <div class="mt-6 overflow-x-auto rounded-xl border border-border xl:overflow-x-visible">
       <table class="w-full text-left text-sm">
         <caption class="sr-only">
           Server activity log
         </caption>
         <thead
-          class="border-b border-border bg-surface text-xs uppercase tracking-wider text-text-muted"
+          class="sticky top-[var(--admin-table-head-top)] z-10 text-xs uppercase tracking-wider text-text-muted [&_th]:bg-surface [&_th]:shadow-[inset_0_-1px_0_var(--color-border)] [&_th:first-child]:rounded-tl-xl [&_th:last-child]:rounded-tr-xl"
         >
           <tr>
             <th scope="col" class="px-4 py-3 font-semibold">Time</th>

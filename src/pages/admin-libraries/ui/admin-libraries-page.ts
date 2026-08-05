@@ -10,6 +10,7 @@ import {
 } from '@shared/api';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 const COLLECTION_TYPES: { value: CollectionTypeOption; label: string }[] = [
   { value: 'movies', label: 'Movies' },
@@ -24,7 +25,7 @@ const COLLECTION_TYPES: { value: CollectionTypeOption; label: string }[] = [
 
 @Component({
   selector: 'jf-admin-libraries-page',
-  imports: [FormField, BrnDialogImports],
+  imports: [AdminPageHeader, FormField, BrnDialogImports],
   templateUrl: './admin-libraries-page.html',
 })
 export class AdminLibrariesPage {

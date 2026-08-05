@@ -13,6 +13,7 @@ import {
   userRequest,
   virtualFoldersRequest,
 } from '@shared/api';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 interface PolicyToggle {
   key: string;
@@ -68,7 +69,7 @@ const TOGGLE_GROUPS: { title: string; items: PolicyToggle[] }[] = [
 
 @Component({
   selector: 'jf-admin-user-page',
-  imports: [RouterLink],
+  imports: [AdminPageHeader, RouterLink],
   templateUrl: './admin-user-page.html',
 })
 export class AdminUserPage {

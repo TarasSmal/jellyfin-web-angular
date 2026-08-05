@@ -1,13 +1,20 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { DeviceInfoDto, DevicesApi, DevicesResult, devicesRequest, liveResource } from '@shared/api';
+import {
+  DeviceInfoDto,
+  DevicesApi,
+  DevicesResult,
+  devicesRequest,
+  liveResource,
+} from '@shared/api';
 import { getDeviceId } from '@shared/lib/device-id';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-devices-page',
-  imports: [DatePipe],
+  imports: [AdminPageHeader, DatePipe],
   templateUrl: './admin-devices-page.html',
 })
 export class AdminDevicesPage {

@@ -7,10 +7,11 @@ import { AdminUsersApi, ApiConfig, UserDto, liveResource, usersRequest } from '@
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PasswordToggle } from '@shared/ui/password-toggle';
 import { PromptService } from '@shared/ui/prompt-dialog';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-users-page',
-  imports: [DatePipe, RouterLink, FormField, BrnDialogImports, PasswordToggle],
+  imports: [AdminPageHeader, DatePipe, RouterLink, FormField, BrnDialogImports, PasswordToggle],
   templateUrl: './admin-users-page.html',
 })
 export class AdminUsersPage {

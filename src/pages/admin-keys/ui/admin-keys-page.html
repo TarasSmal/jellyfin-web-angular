@@ -1,28 +1,30 @@
 <main>
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold">API Keys</h1>
-      <p class="mt-1 text-sm text-text-muted">
-        Tokens for other apps and scripts to talk to the server.
-      </p>
+  <jf-admin-page-header>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">API Keys</h1>
+        <p class="mt-1 text-sm text-text-muted">
+          Tokens for other apps and scripts to talk to the server.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+        (click)="create()"
+      >
+        New key
+      </button>
     </div>
-    <button
-      type="button"
-      class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-      (click)="create()"
-    >
-      New key
-    </button>
-  </div>
+  </jf-admin-page-header>
 
   @if (items(); as list) {
-    <div class="mt-6 overflow-x-auto rounded-xl border border-border">
+    <div class="mt-6 overflow-x-auto rounded-xl border border-border xl:overflow-x-visible">
       <table class="w-full text-left text-sm">
         <caption class="sr-only">
           API keys
         </caption>
         <thead
-          class="border-b border-border bg-surface text-xs uppercase tracking-wider text-text-muted"
+          class="sticky top-[var(--admin-table-head-top)] z-10 text-xs uppercase tracking-wider text-text-muted [&_th]:bg-surface [&_th]:shadow-[inset_0_-1px_0_var(--color-border)] [&_th:first-child]:rounded-tl-xl [&_th:last-child]:rounded-tr-xl"
         >
           <tr>
             <th scope="col" class="px-4 py-3 font-semibold">App</th>
