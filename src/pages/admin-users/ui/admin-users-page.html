@@ -1,75 +1,77 @@
 <main>
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold">Users</h1>
-      <p class="mt-1 text-sm text-text-muted">Accounts on this server.</p>
-    </div>
+  <jf-admin-page-header>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Users</h1>
+        <p class="mt-1 text-sm text-text-muted">Accounts on this server.</p>
+      </div>
 
-    <brn-dialog #createDialog="brnDialog">
-      <button
-        brnDialogTrigger
-        class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
-      >
-        New user
-      </button>
-      <brn-dialog-overlay class="bg-black/60" />
-      <div
-        *brnDialogContent
-        class="w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl"
-      >
-        <h2 brnDialogTitle class="text-lg font-semibold">New user</h2>
-        <form class="mt-4 space-y-4" (submit)="create($event, createDialog)">
-          <label class="block text-sm">
-            <span class="mb-1 block text-text-muted">Username</span>
-            <input
-              [formField]="userForm.name"
-              autocomplete="off"
-              class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
-            />
-            @if (userForm.name().touched() && !userForm.name().valid()) {
-              <span class="mt-1 block text-xs text-danger">Username is required.</span>
-            }
-          </label>
-          <label class="block text-sm">
-            <span class="mb-1 block text-text-muted">Password</span>
-            <div class="relative">
+      <brn-dialog #createDialog="brnDialog">
+        <button
+          brnDialogTrigger
+          class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+        >
+          New user
+        </button>
+        <brn-dialog-overlay class="bg-black/60" />
+        <div
+          *brnDialogContent
+          class="w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl"
+        >
+          <h2 brnDialogTitle class="text-lg font-semibold">New user</h2>
+          <form class="mt-4 space-y-4" (submit)="create($event, createDialog)">
+            <label class="block text-sm">
+              <span class="mb-1 block text-text-muted">Username</span>
               <input
-                jfPasswordToggle
-                [formField]="userForm.password"
-                autocomplete="new-password"
+                [formField]="userForm.name"
+                autocomplete="off"
                 class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
               />
+              @if (userForm.name().touched() && !userForm.name().valid()) {
+                <span class="mt-1 block text-xs text-danger">Username is required.</span>
+              }
+            </label>
+            <label class="block text-sm">
+              <span class="mb-1 block text-text-muted">Password</span>
+              <div class="relative">
+                <input
+                  jfPasswordToggle
+                  [formField]="userForm.password"
+                  autocomplete="new-password"
+                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+                />
+              </div>
+            </label>
+            <div class="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                brnDialogClose
+                class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                [disabled]="!userForm().valid() || creating()"
+                class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+              >
+                {{ creating() ? 'Creating…' : 'Create' }}
+              </button>
             </div>
-          </label>
-          <div class="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              brnDialogClose
-              class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              [disabled]="!userForm().valid() || creating()"
-              class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-            >
-              {{ creating() ? 'Creating…' : 'Create' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </brn-dialog>
-  </div>
+          </form>
+        </div>
+      </brn-dialog>
+    </div>
+  </jf-admin-page-header>
 
   @if (sortedUsers(); as list) {
-    <div class="mt-6 overflow-x-auto rounded-xl border border-border">
+    <div class="mt-6 overflow-x-auto rounded-xl border border-border xl:overflow-x-visible">
       <table class="w-full text-left text-sm">
         <caption class="sr-only">
           Server user accounts
         </caption>
         <thead
-          class="border-b border-border bg-surface text-xs uppercase tracking-wider text-text-muted"
+          class="sticky top-[var(--admin-table-head-top)] z-10 text-xs uppercase tracking-wider text-text-muted [&_th]:bg-surface [&_th]:shadow-[inset_0_-1px_0_var(--color-border)] [&_th:first-child]:rounded-tl-xl [&_th:last-child]:rounded-tr-xl"
         >
           <tr>
             <th scope="col" class="px-4 py-3 font-semibold">User</th>

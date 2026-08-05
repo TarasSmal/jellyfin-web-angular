@@ -20,8 +20,8 @@
   --color-warning: #f5a524;
 
   --font-sans:
-    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
 
   /* Poster aspect ratios used across cards and grids */
   --aspect-poster: 2 / 3;
@@ -70,6 +70,13 @@
   input:disabled {
     cursor: default;
   }
+}
+
+/* Where an admin table's sticky header row parks: below the fixed app bar
+   (4rem) plus the sticky admin page header (1rem padding, a 2rem title, a
+   1.25rem description, 1rem padding). */
+:root {
+  --admin-table-head-top: 9.5rem;
 }
 
 html {

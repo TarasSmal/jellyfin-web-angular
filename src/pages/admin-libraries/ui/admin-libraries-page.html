@@ -1,84 +1,86 @@
 <main>
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold">Libraries</h1>
-      <p class="mt-1 text-sm text-text-muted">Media libraries and their folders on the server.</p>
-    </div>
-    <div class="flex gap-2">
-      <button
-        type="button"
-        class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface-raised"
-        (click)="scanAll()"
-      >
-        Scan all libraries
-      </button>
-
-      <brn-dialog #createDialog="brnDialog">
+  <jf-admin-page-header>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Libraries</h1>
+        <p class="mt-1 text-sm text-text-muted">Media libraries and their folders on the server.</p>
+      </div>
+      <div class="flex gap-2">
         <button
-          brnDialogTrigger
-          class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          type="button"
+          class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface-raised"
+          (click)="scanAll()"
         >
-          New library
+          Scan all libraries
         </button>
-        <brn-dialog-overlay class="bg-black/60" />
-        <div
-          *brnDialogContent
-          class="w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl"
-        >
-          <h2 brnDialogTitle class="text-lg font-semibold">New library</h2>
-          <form class="mt-4 space-y-4" (submit)="create($event, createDialog)">
-            <label class="block text-sm">
-              <span class="mb-1 block text-text-muted">Name</span>
-              <input
-                [formField]="libraryForm.name"
-                autocomplete="off"
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
-              />
-              @if (libraryForm.name().touched() && !libraryForm.name().valid()) {
-                <span class="mt-1 block text-xs text-danger">Name is required.</span>
-              }
-            </label>
-            <label class="block text-sm">
-              <span class="mb-1 block text-text-muted">Content type</span>
-              <select
-                [formField]="libraryForm.type"
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
-              >
-                @for (type of collectionTypes; track type.value) {
-                  <option [value]="type.value">{{ type.label }}</option>
+
+        <brn-dialog #createDialog="brnDialog">
+          <button
+            brnDialogTrigger
+            class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          >
+            New library
+          </button>
+          <brn-dialog-overlay class="bg-black/60" />
+          <div
+            *brnDialogContent
+            class="w-[min(92vw,26rem)] rounded-xl border border-border bg-surface-raised p-6 shadow-2xl"
+          >
+            <h2 brnDialogTitle class="text-lg font-semibold">New library</h2>
+            <form class="mt-4 space-y-4" (submit)="create($event, createDialog)">
+              <label class="block text-sm">
+                <span class="mb-1 block text-text-muted">Name</span>
+                <input
+                  [formField]="libraryForm.name"
+                  autocomplete="off"
+                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+                />
+                @if (libraryForm.name().touched() && !libraryForm.name().valid()) {
+                  <span class="mt-1 block text-xs text-danger">Name is required.</span>
                 }
-              </select>
-            </label>
-            <label class="block text-sm">
-              <span class="mb-1 block text-text-muted">Folder path (optional)</span>
-              <input
-                [formField]="libraryForm.path"
-                autocomplete="off"
-                placeholder="/mnt/media/movies"
-                class="w-full rounded-lg border border-border bg-surface px-3 py-2 placeholder:text-text-faint focus:border-accent focus:outline-none"
-              />
-            </label>
-            <div class="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                brnDialogClose
-                class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                [disabled]="!libraryForm().valid() || creating()"
-                class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-              >
-                {{ creating() ? 'Creating…' : 'Create' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </brn-dialog>
+              </label>
+              <label class="block text-sm">
+                <span class="mb-1 block text-text-muted">Content type</span>
+                <select
+                  [formField]="libraryForm.type"
+                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 focus:border-accent focus:outline-none"
+                >
+                  @for (type of collectionTypes; track type.value) {
+                    <option [value]="type.value">{{ type.label }}</option>
+                  }
+                </select>
+              </label>
+              <label class="block text-sm">
+                <span class="mb-1 block text-text-muted">Folder path (optional)</span>
+                <input
+                  [formField]="libraryForm.path"
+                  autocomplete="off"
+                  placeholder="/mnt/media/movies"
+                  class="w-full rounded-lg border border-border bg-surface px-3 py-2 placeholder:text-text-faint focus:border-accent focus:outline-none"
+                />
+              </label>
+              <div class="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  brnDialogClose
+                  class="rounded-lg border border-border px-4 py-2 text-sm transition-colors hover:bg-surface"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="!libraryForm().valid() || creating()"
+                  class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+                >
+                  {{ creating() ? 'Creating…' : 'Create' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </brn-dialog>
+      </div>
     </div>
-  </div>
+  </jf-admin-page-header>
 
   @if (sortedLibraries(); as list) {
     <div class="mt-6 grid gap-4 lg:grid-cols-2">

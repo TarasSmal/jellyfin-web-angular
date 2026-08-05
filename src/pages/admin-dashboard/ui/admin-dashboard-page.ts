@@ -19,10 +19,11 @@ import { itemPosterUrl } from '@entities/item';
 import { formatBytes } from '@shared/lib/bytes';
 import { ConfirmService } from '@shared/ui/confirm-dialog';
 import { PromptService } from '@shared/ui/prompt-dialog';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-dashboard-page',
-  imports: [SessionCard],
+  imports: [AdminPageHeader, SessionCard],
   templateUrl: './admin-dashboard-page.html',
 })
 export class AdminDashboardPage {

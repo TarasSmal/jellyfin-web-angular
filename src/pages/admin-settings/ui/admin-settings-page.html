@@ -1,18 +1,20 @@
 <main>
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-      <h1 class="text-2xl font-bold">Settings</h1>
-      <p class="mt-1 text-sm text-text-muted">General server configuration.</p>
+  <jf-admin-page-header>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h1 class="text-2xl font-bold">Settings</h1>
+        <p class="mt-1 text-sm text-text-muted">General server configuration.</p>
+      </div>
+      <button
+        type="button"
+        [disabled]="saving() || !draft()"
+        class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+        (click)="save()"
+      >
+        {{ saving() ? 'Saving…' : 'Save changes' }}
+      </button>
     </div>
-    <button
-      type="button"
-      [disabled]="saving() || !draft()"
-      class="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
-      (click)="save()"
-    >
-      {{ saving() ? 'Saving…' : 'Save changes' }}
-    </button>
-  </div>
+  </jf-admin-page-header>
 
   @if (draft(); as current) {
     <div class="mt-6 grid gap-6 lg:grid-cols-2">

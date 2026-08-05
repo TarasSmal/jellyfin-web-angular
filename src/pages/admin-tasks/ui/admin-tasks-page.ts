@@ -1,10 +1,11 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { TaskInfo, TasksApi, liveResource } from '@shared/api';
+import { AdminPageHeader } from '@widgets/admin-shell';
 
 @Component({
   selector: 'jf-admin-tasks-page',
-  imports: [DatePipe],
+  imports: [AdminPageHeader, DatePipe],
   templateUrl: './admin-tasks-page.html',
 })
 export class AdminTasksPage {
