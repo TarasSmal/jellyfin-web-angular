@@ -22,3 +22,4 @@ export * from './socket';
 export * from './live-resource';
 export * from './system-config-api';
 export * from './plugins-api';
+export * from './watch-stats-api';

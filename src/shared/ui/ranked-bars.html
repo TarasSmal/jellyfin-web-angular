@@ -1,0 +1,19 @@
+<ol [attr.aria-label]="label()" class="space-y-3">
+  @for (entry of entries(); track entry.key) {
+    <li>
+      <div class="flex items-baseline justify-between gap-3 text-sm">
+        <span class="truncate text-text">{{ entry.label }}</span>
+        <span class="shrink-0 tabular-nums text-text-muted">
+          {{ entry.valueLabel }}
+          @if (entry.hint; as hint) {
+            <span class="ml-1.5 text-xs text-text-muted">{{ hint }}</span>
+          }
+        </span>
+      </div>
+      <!-- Magnitude only: the number above already carries the value. -->
+      <div aria-hidden="true" class="mt-1.5 h-2 rounded-sm bg-surface-raised">
+        <div class="h-full rounded-r-[4px] bg-accent" [style.width]="width(entry)"></div>
+      </div>
+    </li>
+  }
+</ol>

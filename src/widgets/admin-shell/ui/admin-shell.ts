@@ -11,6 +11,7 @@ export class AdminShell {
   protected readonly sections = [
     { label: 'Overview', path: '/admin' },
     { label: 'Settings', path: '/admin/settings' },
+    { label: 'Statistics', path: '/admin/stats' },
     { label: 'Activity', path: '/admin/activity' },
     { label: 'Users', path: '/admin/users' },
     { label: 'Libraries', path: '/admin/libraries' },

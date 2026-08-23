@@ -1,0 +1,245 @@
+<main>
+  <jf-admin-page-header>
+    <h1 class="text-2xl font-bold">Statistics</h1>
+    <p class="mt-1 text-sm text-text-muted">What this server's accounts have watched.</p>
+  </jf-admin-page-header>
+
+  @if (stats(); as report) {
+    <p class="mt-6 rounded-xl border border-border bg-surface px-4 py-3 text-xs text-text-muted">
+      Derived from each account's per-item watch data, the only history core Jellyfin keeps.
+      Watch time is an estimate — runtime multiplied by finishes — and a title counts once per
+      account, on the date it was last finished.
+      @if (report.truncated) {
+        <span class="text-warning">
+          At least one account has watched more than a single read returns, so totals here
+          undercount it.
+        </span>
+      }
+    </p>
+
+    <section class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <jf-stat-tile
+        class="sm:col-span-2"
+        [hero]="true"
+        label="Total watch time"
+        [value]="watchTime()"
+        [hint]="watchTimeHours()"
+      />
+      <jf-stat-tile label="Titles watched" [value]="titles()" [hint]="titlesHint()" />
+      <jf-stat-tile label="Viewings" [value]="plays()" [hint]="playsHint()" />
+      <jf-stat-tile
+        label="Accounts watching"
+        [value]="accounts()"
+        hint="active of all accounts"
+      />
+      <jf-stat-tile label="Library reached" [value]="coverage()" [hint]="coverageHint()" />
+      <jf-stat-tile
+        label="Average rating watched"
+        [value]="taste()"
+        hint="community score of what gets played"
+      />
+    </section>
+
+    <section class="mt-6 rounded-xl border border-border bg-surface p-5">
+      <h2 class="text-sm font-semibold">Finishes by month</h2>
+      <p class="mt-1 mb-5 text-xs text-text-muted">
+        When each title was last finished, over the past twelve months. A rewatch moves a
+        title forward, so older months thin out over time.
+      </p>
+      <jf-activity-columns
+        [columns]="activity()"
+        label="Titles finished per month"
+        unit="Titles"
+      />
+    </section>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <section class="rounded-xl border border-border bg-surface p-5">
+        <h2 class="text-sm font-semibold">Top genres</h2>
+        <p class="mt-1 mb-5 text-xs text-text-muted">By estimated watch time, all accounts.</p>
+        @if (genreBars().length) {
+          <jf-ranked-bars [entries]="genreBars()" label="Genres by watch time" />
+        } @else {
+          <p class="text-sm text-text-muted">Nothing watched carries genre metadata yet.</p>
+        }
+      </section>
+
+      <section class="rounded-xl border border-border bg-surface p-5">
+        <h2 class="text-sm font-semibold">Top studios and networks</h2>
+        <p class="mt-1 mb-5 text-xs text-text-muted">
+          Episodes count towards their series' network.
+        </p>
+        @if (studioBars().length) {
+          <jf-ranked-bars [entries]="studioBars()" label="Studios by watch time" />
+        } @else {
+          <p class="text-sm text-text-muted">Nothing watched names a studio yet.</p>
+        }
+      </section>
+    </div>
+
+    <div class="mt-6 grid gap-6 lg:grid-cols-2">
+      <section class="rounded-xl border border-border bg-surface p-5">
+        <h2 class="text-sm font-semibold">Most-watched series</h2>
+        <p class="mt-1 mb-4 text-xs text-text-muted">Ranked by time spent in them.</p>
+        @if (series().length) {
+          <table class="w-full text-left text-sm">
+            <caption class="sr-only">Series by watch time</caption>
+            <thead class="text-xs uppercase tracking-wider text-text-muted">
+              <tr class="border-b border-border">
+                <th scope="col" class="pb-2 font-semibold">Series</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Episodes</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Viewers</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (show of series(); track show.seriesId) {
+                <tr class="border-b border-border/60 last:border-b-0">
+                  <td class="w-full max-w-0 truncate py-2 pr-3">{{ show.name }}</td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">
+                    {{ count(show.episodes) }}
+                  </td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">{{ show.viewers }}</td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">
+                    {{ watched(show.watchTimeTicks) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="text-sm text-text-muted">No episodes have been watched yet.</p>
+        }
+      </section>
+
+      <section class="rounded-xl border border-border bg-surface p-5">
+        <h2 class="text-sm font-semibold">Most-watched films</h2>
+        <p class="mt-1 mb-4 text-xs text-text-muted">
+          Ranked by how many accounts watched them, then by rewatches.
+        </p>
+        @if (movies().length) {
+          <table class="w-full text-left text-sm">
+            <caption class="sr-only">Films by reach</caption>
+            <thead class="text-xs uppercase tracking-wider text-text-muted">
+              <tr class="border-b border-border">
+                <th scope="col" class="pb-2 font-semibold">Film</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Viewers</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Viewings</th>
+                <th scope="col" class="whitespace-nowrap pb-2 pl-3 text-right font-semibold">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (film of movies(); track film.itemId) {
+                <tr class="border-b border-border/60 last:border-b-0">
+                  <td class="w-full max-w-0 truncate py-2 pr-3">
+                    {{ film.name }}
+                    @if (film.year) {
+                      <span class="text-text-muted">({{ film.year }})</span>
+                    }
+                  </td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">{{ film.viewers }}</td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">
+                    {{ count(film.plays) }}
+                  </td>
+                  <td class="whitespace-nowrap py-2 pl-3 text-right tabular-nums text-text-muted">
+                    {{ watched(film.watchTimeTicks) }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="text-sm text-text-muted">No films have been watched yet.</p>
+        }
+      </section>
+    </div>
+
+    <section class="mt-6 rounded-xl border border-border bg-surface p-5 lg:w-1/2">
+      <h2 class="text-sm font-semibold">Release decades</h2>
+      <p class="mt-1 mb-5 text-xs text-text-muted">
+        Distinct titles watched, by the decade they came out.
+      </p>
+      @if (decadeBars().length) {
+        <jf-ranked-bars [entries]="decadeBars()" label="Titles watched by release decade" />
+      } @else {
+        <p class="text-sm text-text-muted">Nothing watched carries a release year yet.</p>
+      }
+    </section>
+
+    <section class="mt-6">
+      <h2 class="mb-3 text-sm font-semibold">By account</h2>
+      <!-- Focusable so the horizontal scroll this table needs on narrow
+           viewports is reachable from the keyboard. -->
+      <div
+        role="region"
+        aria-label="Watch statistics per account"
+        tabindex="0"
+        class="overflow-x-auto rounded-xl border border-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent xl:overflow-x-visible"
+      >
+        <table class="w-full text-left text-sm">
+          <caption class="sr-only">Watch statistics per account</caption>
+          <thead
+            class="text-xs uppercase tracking-wider text-text-muted [&_th]:bg-surface [&_th]:shadow-[inset_0_-1px_0_var(--color-border)] [&_th:first-child]:rounded-tl-xl [&_th:last-child]:rounded-tr-xl"
+          >
+            <tr>
+              <th scope="col" class="px-4 py-3 font-semibold">Account</th>
+              <th scope="col" class="px-4 py-3 text-right font-semibold">Watch time</th>
+              <th scope="col" class="px-4 py-3 text-right font-semibold">Films</th>
+              <th scope="col" class="px-4 py-3 text-right font-semibold">Episodes</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Top genre</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Last finished</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users(); track user.userId) {
+              <tr class="border-b border-border/60 last:border-b-0">
+                <td class="whitespace-nowrap px-4 py-3 font-medium">
+                  {{ user.userName }}
+                  @if (user.truncated) {
+                    <span class="ml-1 text-xs text-warning" title="More watched than one read returns">
+                      (partial)
+                    </span>
+                  }
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+                  {{ watched(user.watchTimeTicks) }}
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums text-text-muted">
+                  {{ count(user.movies) }}
+                </td>
+                <td class="px-4 py-3 text-right tabular-nums text-text-muted">
+                  {{ count(user.episodes) }}
+                </td>
+                <td class="whitespace-nowrap px-4 py-3 text-text-muted">
+                  {{ user.topGenre ?? '—' }}
+                </td>
+                <td class="px-4 py-3 text-text-muted">
+                  @if (user.lastPlayed) {
+                    <span class="block max-w-56 truncate">{{ user.lastPlayedName }}</span>
+                    <span class="text-xs text-text-muted">
+                      {{ user.lastPlayed | date: 'MMM d, y' }}
+                    </span>
+                  } @else {
+                    —
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  } @else if (isLoading()) {
+    <div class="mt-6 space-y-3">
+      <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        @for (tile of skeletonRows; track tile) {
+          <div class="h-24 animate-pulse rounded-xl bg-surface"></div>
+        }
+      </div>
+      <div class="h-56 animate-pulse rounded-xl bg-surface"></div>
+      <div class="h-72 animate-pulse rounded-xl bg-surface"></div>
+    </div>
+  } @else if (error()) {
+    <p class="mt-6 text-sm text-danger">Couldn't build the report — the server refused a read.</p>
+  }
+</main>

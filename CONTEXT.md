@@ -51,3 +51,9 @@ Glossary of the language used in this project. Terms are added as they crystalli
 **Presentation** — How the Playback Stage is currently shown: **full screen** (the player route) or **docked** (everywhere else). Derived from the URL rather than stored, so browser Back and Forward move the player like any other navigation. Changing presentation swaps chrome only — never the video element, which would restart the stream.
 
 **Mini Player** — The docked presentation's chrome: a small corner player with the title, play/pause, progress, expand and close. It shares one video element and one Play Session with the full-screen chrome; it is a second face of the same playback, not a second player.
+
+**Watch Report** — The server-wide picture of what has been watched: totals, per-account rows, and rankings of genres, networks, series, films and release decades. Derived from the per-item tally Jellyfin keeps for each account, never from a playback log — core Jellyfin has none (ADR 0006). Admin-only, since it reads every account.
+
+**Estimated Watch Time** — Runtime multiplied by finishes. The only watch-time figure this client can produce: Jellyfin records *that* an item was finished and how often, never for how long. Always presented as an estimate.
+
+**Finishes by Month** — The activity chart on the Watch Report: each title counted in the month its account most recently finished it. Not a history — a rewatch moves a title forward, so older months thin out over time.

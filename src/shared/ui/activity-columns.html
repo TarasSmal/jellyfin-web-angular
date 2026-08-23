@@ -1,0 +1,42 @@
+<div aria-hidden="true">
+  <div class="flex h-32 items-end gap-0.5">
+    @for (column of columns(); track column.key) {
+      <div class="flex h-full flex-1 flex-col justify-end" [title]="column.label + ': ' + column.value">
+        @if (column === busiest()) {
+          <span class="mb-1 text-center text-[10px] tabular-nums text-text-muted">
+            {{ column.value }}
+          </span>
+        }
+        <div
+          class="mx-auto w-full max-w-6 rounded-t-[4px] bg-accent transition-[height]"
+          [style.height]="height(column)"
+        ></div>
+      </div>
+    }
+  </div>
+  <!-- Solid hairline baseline; the columns grow from it. -->
+  <div class="h-px bg-border"></div>
+  <div class="mt-1.5 flex gap-0.5">
+    @for (column of columns(); track column.key) {
+      <span class="flex-1 text-center text-[10px] text-text-muted">{{ column.tick }}</span>
+    }
+  </div>
+</div>
+
+<table class="sr-only">
+  <caption>{{ label() }}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Period</th>
+      <th scope="col">{{ unit() }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (column of columns(); track column.key) {
+      <tr>
+        <th scope="row">{{ column.label }}</th>
+        <td>{{ column.value }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
