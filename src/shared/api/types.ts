@@ -144,6 +144,18 @@ export interface UserItemData {
   Played?: boolean;
   IsFavorite?: boolean;
   UnplayedItemCount?: number;
+  /** Times this account finished the item. Absent means never played. */
+  PlayCount?: number;
+  /** ISO date of the most recent finish — overwritten by every rewatch. */
+  LastPlayedDate?: string;
+}
+
+/** /Items/Counts — server-wide library totals. */
+export interface ItemCounts {
+  MovieCount?: number;
+  SeriesCount?: number;
+  EpisodeCount?: number;
+  ItemCount?: number;
 }
 
 export interface PersonDto {
